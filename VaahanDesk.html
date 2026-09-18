@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaahanDesk - GPS Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, button { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #27ae60; color: white; font-size: 16px; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background: #219653; }
+        table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: #f2f2f2; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>माँ बंजारी इंटरप्राइजेज - VaahanDesk</h2>
+    
+    <div class="form-group">
+        <label>गाड़ी नंबर (Vehicle Number):</label>
+        <input type="text" id="vehNo" placeholder="जैसे: CG10AB1234">
+    </div>
+    
+    <div class="form-group">
+        <label>मालिक का नाम (Owner Name):</label>
+        <input type="text" id="ownerName" placeholder="ग्राहक का नाम">
+    </div>
+
+    <div class="form-group">
+        <label>GPS एक्सपायरी तारीख (Expiry Date):</label>
+        <input type="date" id="expDate">
+    </div>
+
+    <button onclick="saveVehicle()">गाड़ी सेव करें</button>
+
+    <h3>सेव की गई गाड़ियाँ</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>गाड़ी नंबर</th>
+                <th>मालिक</th>
+                <th>एक्सपायरी डेट</th>
+            </tr>
+        setKeepCallback</thead>
+        <tbody id="vehicleTable">
+            <!-- डेटा यहाँ दिखेगा -->
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function saveVehicle() {
+        const vehNo = document.getElementById('vehNo').value;
+        const ownerName = document.getElementById('ownerName').value;
+        const expDate = document.getElementById('expDate').value;
+
+        if(!vehNo || !expDate) {
+            alert('कृपया गाड़ी नंबर और एक्सपायरी डेट भरें!');
+            return;
+        }
+
+        const table = document.getElementById('vehicleTable');
+        const row = table.insertRow();
+        row.innerHTML = `<td>${vehNo}</td><td>${ownerName}</td><td>${expDate}</td>`;
+
+        alert('गाड़ी सफलतापूर्क जोड़ दी गई है!');
+        document.getElementById('vehNo').value = '';
+        document.getElementById('ownerName').value = '';
+        document.getElementById('expDate').value = '';
+    }
+</script>
+
+</body>
+</html>
