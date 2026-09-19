@@ -1,614 +1,118 @@
 <!DOCTYPE html>
 <html lang="hi">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<meta name="theme-color" content="#0c0d0b" />
-<title>VaahanDesk</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet" />
-<style>
-:root {
-  --bg: #0c0d0b; --fg: #eceae4; --card: #151613; --muted: #9a978c;
-  --line: #2a2b26; --btn: #d8d6cc; --ink: #12130f; --soft: #1c1d19;
-  --danger: #c45c4a; --warn: #c4a15a; --safe: #6b9a6e; --radius: 12px;
-}
-* { box-sizing: border-box; border-color: var(--line); }
-html, body { margin: 0; background: var(--bg); color: var(--fg); font-family: "IBM Plex Sans", "Segoe UI", sans-serif; min-height: 100dvh; }
-h1, h2, .plate { font-family: Rajdhani, "IBM Plex Sans", sans-serif; }
-button, input, select, textarea { font: inherit; }
-button { cursor: pointer; }
-.wrap { max-width: 980px; margin: 0 auto; padding: 20px 16px 96px; }
-.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
-.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
-.grid { display: grid; gap: 10px; }
-.g2 { grid-template-columns: 1fr 1fr; }
-.g4 { grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 800px) { .g4 { grid-template-columns: repeat(4, 1fr); } .g2 { grid-template-columns: 1fr 1fr; } }
-label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 4px; }
-input, select, textarea {
-  width: 100%; background: var(--soft); color: var(--fg); border: 1px solid var(--line);
-  border-radius: 8px; padding: 10px 12px; outline: none;
-}
-.btn { border: 0; border-radius: 8px; padding: 11px 16px; font-weight: 600; }
-.btn-p { background: var(--btn); color: var(--ink); }
-.btn-s { background: var(--soft); color: var(--fg); border: 1px solid var(--line); }
-.btn-d { background: #3a1c18; color: #fde8e4; }
-.btn-wa { background: #1f3d2c; color: #b7e0c2; }
-.chip { border: 0; border-radius: 999px; padding: 8px 14px; background: var(--soft); color: var(--muted); }
-.chip.on { background: var(--btn); color: var(--ink); }
-.badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 600; }
-.b-red, .b-expired { background: #3a1c18; color: #f0b8ae; }
-.b-yellow { background: #322a14; color: #e8d09a; }
-.b-green { background: #1a2a1c; color: #b5d7b7; }
-.b-none { background: var(--soft); color: var(--muted); }
-.stat { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px; }
-.stat b { display: block; font-size: 28px; font-family: Rajdhani, sans-serif; }
-.nav {
-  position: fixed; bottom: 0; left: 0; right: 0; background: #11120f; border-top: 1px solid var(--line);
-  display: flex; justify-content: space-around; padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-}
-.nav button { background: none; border: 0; color: var(--muted); padding: 8px; font-size: 12px; }
-.nav button.on { color: var(--fg); font-weight: 600; }
-.tabs { display: flex; gap: 8px; margin-bottom: 16px; }
-.hide { display: none !important; }
-.muted { color: var(--muted); font-size: 13px; }
-.toast {
-  position: fixed; top: 16px; left: 50%; transform: translateX(-50%); background: #222; border: 1px solid var(--line);
-  padding: 10px 16px; border-radius: 8px; z-index: 50;
-}
-a { color: inherit; }
-.plate { letter-spacing: .04em; font-size: 22px; font-weight: 700; }
-hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VaahanDesk - GPS · ओडिशा · छत्तीसगढ़ माइनिंग डेस्क</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #0b0b0b; color: #ffffff; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Left Branding Panel */
+        .left-panel { flex: 1; background: #0b0b0b; padding: 40px; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #222; }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-icon { background: #1f1f1f; padding: 10px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+        .logo-text { font-size: 20px; font-weight: bold; letter-spacing: 0.5px; }
+        
+        .hero-text h1 { font-size: 48px; font-weight: 700; margin-bottom: 10px; }
+        .hero-text p { font-size: 18px; color: #a0a0a0; }
+        
+        .footer-info { font-size: 14px; color: #777; }
+
+        /* Right Auth Panel */
+        .right-panel { width: 480px; background: #0b0b0b; padding: 40px; display: flex; flex-direction: column; justify-content: center; }
+        
+        .role-tabs { display: flex; background: #161616; border-radius: 8px; padding: 4px; margin-bottom: 25px; border: 1px solid #262626; }
+        .role-tab { flex: 1; text-align: center; padding: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; color: #888; transition: 0.2s; }
+        .role-tab.active { background: #e5e5e5; color: #000; }
+
+        .social-btn { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background: #141414; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.2s; }
+        .social-btn:hover { background: #1f1f1f; }
+
+        .divider { text-align: center; color: #666; font-size: 13px; margin: 15px 0; }
+
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 13px; color: #bbb; margin-bottom: 6px; }
+        .input-group input { width: 100%; padding: 12px; background: #141414; border: 1px solid #333; border-radius: 8px; color: #fff; font-size: 14px; outline: none; }
+        .input-group input:focus { border-color: #666; }
+
+        .submit-btn { width: 100%; padding: 12px; background: #e5e5e5; color: #000; font-size: 15px; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: 0.2s; }
+        .submit-btn:hover { background: #ffffff; }
+
+        .auth-footer { text-align: center; margin-top: 20px; font-size: 14px; color: #888; }
+        .auth-footer a { color: #fff; text-decoration: none; font-weight: 500; }
+        .auth-footer a:hover { text-decoration: underline; }
+
+        .lang-options { display: flex; gap: 8px; margin-top: 30px; }
+        .lang-btn { padding: 6px 14px; background: #141414; border: 1px solid #333; border-radius: 6px; color: #aaa; font-size: 13px; cursor: pointer; }
+        .lang-btn.active { background: #262626; color: #fff; }
+
+        @media(max-width: 900px) {
+            body { flex-direction: column; overflow: auto; height: auto; }
+            .left-panel { display: none; }
+            .right-panel { width: 100%; padding: 20px; }
+        }
+    </style>
 </head>
 <body>
-<div id="toast" class="toast hide"></div>
-<div id="app" class="wrap"></div>
-<script>
-const KEY = "vaahandesk.v2";
-const HI = {
-  app: "VaahanDesk", tagline: "GPS · ओडिशा · छत्तीसगढ़ माइनिंग डेस्क",
-  shop: "दुकान / एडमिन", customer: "ग्राहक / ट्रांसपोर्टर",
-  email: "ईमेल", password: "पासवर्ड", shopName: "दुकान का नाम",
-  signIn: "लॉगिन", createShop: "नई दुकान बनाएँ", phone: "मोबाइल नंबर",
-  customerHint: "लॉगिन आईडी दुकान वाले से लें — मोबाइल और पासवर्ड।",
-  dash: "डैशबोर्ड", vehicles: "गाड़ियाँ", customers: "ग्राहक", settings: "सेटिंग्स",
-  out: "लॉग आउट", total: "कुल गाड़ियाँ", red: "लाल अलर्ट", yellow: "पीले अलर्ट", expired: "समाप्त",
-  attention: "ध्यान दें", allClear: "कोई अलर्ट नहीं — सभी वैधता सुरक्षित हैं।",
-  add: "नई गाड़ी", sample: "डेमो गाड़ियाँ जोड़ें", searchV: "गाड़ी नंबर…", searchC: "ग्राहक का नाम…",
-  all: "सभी", gps: "GPS", odisha: "ओडिशा", cg: "छत्तीसगढ़", redOnly: "केवल लाल अलर्ट",
-  customerName: "ग्राहक का नाम", vehicleNumber: "गाड़ी नंबर", imei: "GPS IMEI (15 अंक)",
-  install: "GPS इंस्टॉल तिथि", validity: "GPS वैधता", y1: "1 साल", y2: "2 साल", y3: "3 साल", y5: "5 साल",
-  gpsExp: "GPS समाप्ति", odPermit: "ओडिशा परमिट नं.", odExp: "ओडिशा समाप्ति",
-  cgPermit: "छत्तीसगढ़ परमिट नं.", cgExp: "छत्तीसगढ़ समाप्ति",
-  custPhone: "ग्राहक मोबाइल (WhatsApp)", save: "सेव करें", cancel: "रद्द", del: "हटाएँ", edit: "संपादित",
-  wa: "WhatsApp रिमाइंडर", today: "आज समाप्त", none: "सेट नहीं",
-  addCust: "ग्राहक लॉगिन बनाएँ", createLogin: "लॉगिन बनाएँ",
-  custHelp: "ग्राहक मोबाइल से लॉगिन करेगा। पासवर्ड आप बनाकर दें।",
-  lang: "भाषा", shopRole: "दुकान एडमिन", custRole: "ग्राहक",
-  alert: "अलर्ट कब दिखाएँ", alertHelp: "समाप्ति से कितने दिन पहले चेतावनी दिखे।",
-  required: "ज़रूरी है", badImei: "IMEI 15 अंक का हो", badPhone: "10 अंक का मोबाइल",
-  dupV: "यह गाड़ी नंबर पहले से है", dupP: "इस मोबाइल पर लॉगिन है", pwMin: "पासवर्ड कम से कम 6 अक्षर",
-  saved: "सेव हो गया", created: "बन गया", deleted: "हट गया", viewOnly: "केवल देखने के लिए।",
-  greet: "नमस्ते", share: "लॉगिन WhatsApp पर भेजें"
-};
-const EN = {
-  app: "VaahanDesk", tagline: "GPS · Odisha · Chhattisgarh mining desk",
-  shop: "Shop / Admin", customer: "Customer / Transporter",
-  email: "Email", password: "Password", shopName: "Shop name",
-  signIn: "Sign in", createShop: "Create shop", phone: "Mobile number",
-  customerHint: "Ask the shop for mobile + password login.",
-  dash: "Dashboard", vehicles: "Vehicles", customers: "Customers", settings: "Settings",
-  out: "Sign out", total: "Total dumpers", red: "Red alerts", yellow: "Yellow alerts", expired: "Expired",
-  attention: "Needs attention", allClear: "No alerts — all permits look healthy.",
-  add: "Add vehicle", sample: "Load sample dumpers", searchV: "Vehicle number…", searchC: "Customer name…",
-  all: "All", gps: "GPS", odisha: "Odisha", cg: "Chhattisgarh", redOnly: "Red alerts only",
-  customerName: "Customer name", vehicleNumber: "Vehicle number", imei: "GPS IMEI (15 digits)",
-  install: "GPS install date", validity: "GPS validity", y1: "1 year", y2: "2 years", y3: "3 years", y5: "5 years",
-  gpsExp: "GPS expiry", odPermit: "Odisha permit no.", odExp: "Odisha expiry",
-  cgPermit: "Chhattisgarh permit no.", cgExp: "Chhattisgarh expiry",
-  custPhone: "Customer mobile (WhatsApp)", save: "Save", cancel: "Cancel", del: "Delete", edit: "Edit",
-  wa: "WhatsApp reminder", today: "Expires today", none: "Not set",
-  addCust: "Create customer login", createLogin: "Create login",
-  custHelp: "Customer signs in with this mobile. You set the password.",
-  lang: "Language", shopRole: "Shop admin", custRole: "Customer",
-  alert: "When to alert", alertHelp: "Dashboard warnings start this many days before expiry.",
-  required: "Required", badImei: "IMEI must be 15 digits", badPhone: "Enter a 10-digit mobile",
-  dupV: "This vehicle number already exists", dupP: "Login already exists for this mobile", pwMin: "Password at least 6 characters",
-  saved: "Saved", created: "Created", deleted: "Deleted", viewOnly: "View only.",
-  greet: "Hello", share: "Send login on WhatsApp"
-};
 
-function load() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || empty(); }
-  catch { return empty(); }
-}
-function empty() {
-  return { users: [], vehicles: [], session: null, lang: "hi", alertDays: [30, 15, 7, 0] };
-}
-function save(db) { localStorage.setItem(KEY, JSON.stringify(db)); }
-let DB = load();
-let page = "dash";
-let editing = null;
-let filters = { q: "", cq: "", svc: "all", status: "all" };
-
-const t = () => (DB.lang === "en" ? EN : HI);
-function toast(msg) {
-  const el = document.getElementById("toast");
-  el.textContent = msg; el.classList.remove("hide");
-  setTimeout(() => el.classList.add("hide"), 1800);
-}
-function todayIso() {
-  const n = new Date();
-  return `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,"0")}-${String(n.getDate()).padStart(2,"0")}`;
-}
-function addYears(iso, years) {
-  if (!iso || !years) return "";
-  const [y,m,d] = iso.split("-").map(Number);
-  const dt = new Date(Date.UTC(y, m-1, d));
-  dt.setUTCFullYear(dt.getUTCFullYear() + years);
-  return dt.toISOString().slice(0,10);
-}
-function daysUntil(iso) {
-  if (!iso) return null;
-  const a = Date.parse(iso + "T00:00:00Z");
-  const b = Date.parse(todayIso() + "T00:00:00Z");
-  if (isNaN(a) || isNaN(b)) return null;
-  return Math.round((a-b)/86400000);
-}
-function level(days) {
-  if (days === null) return "none";
-  if (days < 0) return "expired";
-  if (days <= 7) return "red";
-  if (days <= 30) return "yellow";
-  return "green";
-}
-function digits(s) { return String(s||"").replace(/\D/g,""); }
-function phone10(s) {
-  const d = digits(s);
-  if (d.length === 12 && d.startsWith("91")) return d.slice(2);
-  if (d.length === 11 && d.startsWith("0")) return d.slice(1);
-  return d.length === 10 ? d : "";
-}
-function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
-function me() { return DB.users.find(u => u.id === DB.session) || null; }
-function shopId() {
-  const u = me();
-  return u ? (u.role === "admin" ? u.id : u.ownerId) : null;
-}
-function myVehicles() {
-  const u = me(); if (!u) return [];
-  const all = DB.vehicles.filter(v => v.ownerId === (u.role === "admin" ? u.id : u.ownerId));
-  if (u.role === "admin") return all;
-  return all.filter(v => v.customerPhone === u.phone || v.customerUserId === u.id);
-}
-function snaps(v) {
-  return [
-    { key: "gps", date: v.gpsExpiryDate, label: t().gps },
-    { key: "odisha", date: v.odishaExpiryDate, label: t().odisha },
-    { key: "chhattisgarh", date: v.cgExpiryDate, label: t().cg }
-  ].map(s => ({ ...s, days: daysUntil(s.date), lv: level(daysUntil(s.date)) }));
-}
-function worst(v) {
-  const order = { expired: 0, red: 1, yellow: 2, green: 3, none: 4 };
-  return snaps(v).reduce((a,s) => order[s.lv] < order[a] ? s.lv : a, "none");
-}
-function badge(lv, days, name) {
-  let txt = t().none;
-  if (days === 0) txt = t().today;
-  else if (days !== null && days < 0) txt = Math.abs(days) + (DB.lang==="hi"?" दिन हो चुके":" days overdue");
-  else if (days !== null) txt = days + (DB.lang==="hi"?" दिन शेष":" days left");
-  return `<span class="badge b-${lv}">${name} · ${txt}</span>`;
-}
-function waMsg(v, s) {
-  const name = v.customerName || "";
-  const d = s.days;
-  if (DB.lang === "hi") {
-    const when = d < 0 ? `${Math.abs(d)} दिन पहले समाप्त हो चुकी है` : d === 0 ? "आज समाप्त हो रही है" : `${d} दिन में समाप्त हो रही है (${s.date})`;
-    return `नमस्ते ${name} जी,\nआपकी गाड़ी ${v.vehicleNumber} की ${s.label} वैधता ${when}।\nकृपया समय रहते रिन्यू करवा लें।\n— VaahanDesk`;
-  }
-  const when = d < 0 ? `expired ${Math.abs(d)} days ago` : d === 0 ? "expires today" : `expires in ${d} days (${s.date})`;
-  return `Hello ${name},\nVehicle ${v.vehicleNumber} ${s.label} ${when}.\nPlease renew it on time.\n— VaahanDesk`;
-}
-function waHref(phone, text) {
-  const p = phone10(phone);
-  if (!p) return null;
-  return `https://wa.me/91${p}?text=${encodeURIComponent(text)}`;
-}
-function shift(days) {
-  const [y,m,d] = todayIso().split("-").map(Number);
-  const dt = new Date(Date.UTC(y,m-1,d));
-  dt.setUTCDate(dt.getUTCDate()+days);
-  return dt.toISOString().slice(0,10);
-}
-function sample() {
-  return [
-    ["राम ट्रांसपोर्ट","OD05AB4521","869451032211547",shift(-340),1,"OD-MP-8821",shift(5),"CG-TR-4410",shift(48),"9876500101"],
-    ["शुभम माइनिंग","CG04CD8890","869451032211548",shift(-700),2,"", "", "CG-MN-2291",shift(-3),"9876500102"],
-    ["जय जगन्नाथ ट्रांसपोर्ट","OD09EF2211","869451032211549",shift(-20),1,"OD-KS-1102",shift(14),"CG-JS-8802",shift(21),"9876500103"],
-    ["बस्तर लॉजिस्टिक्स","CG07GH3344","869451032211550",shift(-80),1,"OD-BP-6711",shift(62),"CG-BS-0199",shift(0),"9876500104"],
-    ["महालक्ष्मी डम्पर","OD11JK7788","869451032211551",shift(-400),2,"OD-SB-4408",shift(-12),"","", "9876500105"],
-    ["साई माइनिंग","CG10LM9901","869451032211552",shift(-10),1,"OD-AN-9088",shift(90),"CG-RG-3301",shift(11),"9876500106"]
-  ].map(r => ({
-    customerName: r[0], vehicleNumber: r[1], gpsImei: r[2], gpsInstallDate: r[3], gpsValidityYears: r[4],
-    odishaPermitNo: r[5], odishaExpiryDate: r[6], cgPermitNo: r[7], cgExpiryDate: r[8], customerPhone: r[9]
-  }));
-}
-
-function render() {
-  const u = me();
-  document.getElementById("app").innerHTML = u ? appShell(u) : loginView();
-  bind();
-}
-
-function loginView() {
-  const T = t();
-  return `
-  <div style="max-width:420px;margin:40px auto;">
-    <h1 style="font-size:42px;margin:0">${T.app}</h1>
-    <p class="muted">${T.tagline}</p>
-    <div class="tabs" style="margin-top:20px">
-      <button class="chip on" data-tab="shop">${T.shop}</button>
-      <button class="chip" data-tab="cust">${T.customer}</button>
-    </div>
-    <div id="shopForm" class="card grid">
-      <div><label>${T.shopName}</label><input id="shopName" placeholder="MBEL GPS" /></div>
-      <div><label>${T.email}</label><input id="shopEmail" type="email" placeholder="shop@email.com" /></div>
-      <div><label>${T.password}</label><input id="shopPass" type="password" /></div>
-      <button class="btn btn-p" id="shopLogin">${T.signIn}</button>
-      <button class="btn btn-s" id="shopCreate">${T.createShop}</button>
-    </div>
-    <div id="custForm" class="card grid hide">
-      <p class="muted">${T.customerHint}</p>
-      <div><label>${T.phone}</label><input id="custPhone" inputmode="numeric" placeholder="9876543210" /></div>
-      <div><label>${T.password}</label><input id="custPass" type="password" /></div>
-      <button class="btn btn-p" id="custLogin">${T.signIn}</button>
-    </div>
-  </div>`;
-}
-
-function appShell(u) {
-  const T = t();
-  const admin = u.role === "admin";
-  let body = "";
-  if (page === "dash") body = dashView(u);
-  else if (page === "vehicles") body = vehiclesView(u);
-  else if (page === "customers" && admin) body = customersView(u);
-  else if (page === "settings") body = settingsView(u);
-  else body = dashView(u);
-  return `
-    ${body}
-    <nav class="nav">
-      <button data-go="dash" class="${page==="dash"?"on":""}">${T.dash}</button>
-      <button data-go="vehicles" class="${page==="vehicles"?"on":""}">${T.vehicles}</button>
-      ${admin ? `<button data-go="customers" class="${page==="customers"?"on":""}">${T.customers}</button>` : ""}
-      <button data-go="settings" class="${page==="settings"?"on":""}">${T.settings}</button>
-    </nav>`;
-}
-
-function dashView(u) {
-  const T = t();
-  const vs = myVehicles();
-  const red = vs.filter(v => { const w = worst(v); return w==="red"||w==="expired"; }).length;
-  const yellow = vs.filter(v => worst(v)==="yellow").length;
-  const expired = vs.filter(v => worst(v)==="expired").length;
-  const max = Math.max(...(DB.alertDays||[30]));
-  const att = vs.map(v => {
-    const s = snaps(v).filter(x => x.days !== null && x.days <= max).sort((a,b)=>a.days-b.days);
-    return { v, s, soon: s[0] };
-  }).filter(x => x.s.length).sort((a,b)=>a.soon.days-b.soon.days);
-  const admin = u.role === "admin";
-  return `
-    <h1 style="margin:0 0 4px">${T.greet}${u.name ? ", " + u.name : ""}</h1>
-    <p class="muted">${admin ? T.shopRole : T.custRole}${admin?"":" · "+T.viewOnly}</p>
-    <div class="grid g4" style="margin:16px 0">
-      <div class="stat"><span class="muted">${T.total}</span><b>${vs.length}</b></div>
-      <div class="stat"><span class="muted">${T.red}</span><b style="color:#f0b8ae">${red}</b></div>
-      <div class="stat"><span class="muted">${T.yellow}</span><b style="color:#e8d09a">${yellow}</b></div>
-      <div class="stat"><span class="muted">${T.expired}</span><b style="color:#f0b8ae">${expired}</b></div>
-    </div>
-    ${admin && vs.length===0 ? `<button class="btn btn-s" id="loadSample">${T.sample}</button>` : ""}
-    <h2>${T.attention}</h2>
-    ${att.length===0 ? `<p class="muted">${T.allClear}</p>` : att.map(({v,s,soon}) => `
-      <div class="card" style="margin-bottom:10px">
-        <div class="plate">${v.vehicleNumber}</div>
-        <div class="muted">${v.customerName}</div>
-        <div class="row" style="margin-top:8px">${s.map(x => badge(x.lv,x.days,x.label)).join("")}</div>
-        ${waHref(v.customerPhone, waMsg(v, soon)) ? `<p style="margin:10px 0 0"><a class="btn btn-wa" target="_blank" href="${waHref(v.customerPhone, waMsg(v, soon))}">${T.wa}</a></p>` : ""}
-      </div>`).join("")}`;
-}
-
-function vehiclesView(u) {
-  const T = t();
-  const admin = u.role === "admin";
-  let list = myVehicles();
-  const q = filters.q.trim().toUpperCase();
-  const cq = filters.cq.trim().toLowerCase();
-  if (q) list = list.filter(v => v.vehicleNumber.includes(q));
-  if (cq) list = list.filter(v => v.customerName.toLowerCase().includes(cq));
-  if (filters.svc !== "all") list = list.filter(v => {
-    const s = snaps(v).find(x => x.key === filters.svc);
-    return s && s.lv !== "none" && s.lv !== "green";
-  });
-  if (filters.status === "red") list = list.filter(v => { const w=worst(v); return w==="red"||w==="expired"; });
-  return `
-    <div class="row" style="justify-content:space-between">
-      <h1 style="margin:0">${T.vehicles}</h1>
-      ${admin ? `<button class="btn btn-p" id="addV">${T.add}</button>` : ""}
-    </div>
-    <div class="grid g2" style="margin:12px 0">
-      <input id="qV" placeholder="${T.searchV}" value="${filters.q}" />
-      <input id="qC" placeholder="${T.searchC}" value="${filters.cq}" />
-    </div>
-    <div class="row">
-      ${["all","gps","odisha","chhattisgarh"].map(k => `<button class="chip ${filters.svc===k?"on":""}" data-svc="${k}">${k==="all"?T.all:k==="gps"?T.gps:k==="odisha"?T.odisha:T.cg}</button>`).join("")}
-      <button class="chip ${filters.status==="red"?"on":""}" data-st="red">${T.redOnly}</button>
-    </div>
-    <div style="margin-top:12px">
-      ${list.length===0 ? `<p class="muted">${T.vehicles}: 0</p>` : list.map(v => `
-        <div class="card" style="margin-bottom:10px">
-          <div class="row" style="justify-content:space-between">
-            <div class="plate">${v.vehicleNumber}</div>
-            ${admin ? `<div class="row"><button class="btn btn-s" data-edit="${v.id}">${T.edit}</button><button class="btn btn-d" data-del="${v.id}">${T.del}</button></div>` : ""}
-          </div>
-          <div class="muted">${v.customerName}${v.customerPhone?" · "+v.customerPhone:""}</div>
-          <div class="row" style="margin-top:8px">${snaps(v).map(x => badge(x.lv,x.days,x.label)).join("")}</div>
-        </div>`).join("")}
-    </div>
-    <div id="editor"></div>`;
-}
-
-function formHtml(v) {
-  const T = t();
-  const x = v || { customerName:"", vehicleNumber:"", gpsImei:"", gpsInstallDate:"", gpsValidityYears:1,
-    odishaPermitNo:"", odishaExpiryDate:"", cgPermitNo:"", cgExpiryDate:"", customerPhone:"" };
-  const exp = addYears(x.gpsInstallDate, Number(x.gpsValidityYears)||0);
-  return `
-    <div class="card" style="margin-top:16px">
-      <div class="grid g2">
-        <div><label>${T.customerName}</label><input id="fName" value="${esc(x.customerName)}" /></div>
-        <div><label>${T.vehicleNumber}</label><input id="fVeh" value="${esc(x.vehicleNumber)}" /></div>
-        <div><label>${T.imei}</label><input id="fImei" value="${esc(x.gpsImei)}" maxlength="15" /></div>
-        <div><label>${T.custPhone}</label><input id="fPhone" value="${esc(x.customerPhone)}" /></div>
-        <div><label>${T.install}</label><input id="fInst" type="date" value="${x.gpsInstallDate||""}" /></div>
-        <div><label>${T.validity}</label>
-          <select id="fYears">
-            ${[1,2,3,5].map(n => `<option value="${n}" ${Number(x.gpsValidityYears)===n?"selected":""}>${n} ${T.y1.replace("1 ","")}</option>`).join("")}
-          </select>
+    <!-- Left Branding Section -->
+    <div class="left-panel">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M5 18H3c-.6 0-1-.4-1-1V7c0-.6.4-1 1-1h10c.6 0 1 .4 1 1v11"></path><path d="M14 9h4l4 4v4c0 .6-.4 1-1 1h-2"></path><circle cx="7" cy="18" r="2"></circle><circle cx="17" cy="18" r="2"></circle></svg>
+            </div>
+            <span class="logo-text">VaahanDesk</span>
         </div>
-        <div><label>${T.gpsExp}</label><input id="fGpsExp" value="${exp}" disabled /></div>
-        <div></div>
-        <div><label>${T.odPermit}</label><input id="fOdNo" value="${esc(x.odishaPermitNo)}" /></div>
-        <div><label>${T.odExp}</label><input id="fOdExp" type="date" value="${x.odishaExpiryDate||""}" /></div>
-        <div><label>${T.cgPermit}</label><input id="fCgNo" value="${esc(x.cgPermitNo)}" /></div>
-        <div><label>${T.cgExp}</label><input id="fCgExp" type="date" value="${x.cgExpiryDate||""}" /></div>
-      </div>
-      <div class="row" style="margin-top:12px">
-        <button class="btn btn-p" id="saveV">${T.save}</button>
-        <button class="btn btn-s" id="cancelV">${T.cancel}</button>
-      </div>
-    </div>`;
-}
-
-function customersView(u) {
-  const T = t();
-  const list = DB.users.filter(x => x.role==="customer" && x.ownerId===u.id);
-  return `
-    <h1>${T.customers}</h1>
-    <p class="muted">${T.custHelp}</p>
-    <div class="card grid" style="margin:12px 0">
-      <div class="g2 grid">
-        <div><label>${T.customerName}</label><input id="cName" /></div>
-        <div><label>${T.phone}</label><input id="cPhone" inputmode="numeric" /></div>
-        <div><label>${T.password}</label><input id="cPass" /></div>
-      </div>
-      <button class="btn btn-p" id="makeCust">${T.createLogin}</button>
-    </div>
-    ${list.map(c => {
-      const n = DB.vehicles.filter(v => v.ownerId===u.id && (v.customerUserId===c.id || v.customerPhone===c.phone)).length;
-      const msg = DB.lang==="hi"
-        ? `आपका VaahanDesk ग्राहक लॉगिन:\nमोबाइल: ${c.phone}\nपासवर्ड दुकान वाले से लें।`
-        : `VaahanDesk login\nMobile: ${c.phone}`;
-      const href = waHref(c.phone, msg);
-      return `<div class="card" style="margin-bottom:8px">
-        <b>${esc(c.name)}</b> · ${c.phone} · ${n} ${T.vehicles}
-        <div class="row" style="margin-top:8px">
-          ${href?`<a class="btn btn-wa" target="_blank" href="${href}">${T.share}</a>`:""}
-          <button class="btn btn-d" data-delc="${c.id}">${T.del}</button>
+        <div class="hero-text">
+            <h1>VaahanDesk</h1>
+            <p>GPS · ओडिशा · छत्तीसगढ़ माइनिंग डेस्क</p>
         </div>
-      </div>`;
-    }).join("")}`;
-}
-
-function settingsView(u) {
-  const T = t();
-  const days = [30,15,7,3,1,0];
-  return `
-    <h1>${T.settings}</h1>
-    <p class="muted">${u.role==="admin"?T.shopRole:T.custRole} · ${esc(u.name||u.email||u.phone||"")}</p>
-    <div class="card" style="margin-top:12px">
-      <h2 style="margin-top:0">${T.lang}</h2>
-      <div class="row">
-        <button class="chip ${DB.lang==="hi"?"on":""}" id="langHi">हिन्दी</button>
-        <button class="chip ${DB.lang==="en"?"on":""}" id="langEn">English</button>
-      </div>
+        <div class="footer-info">
+            GPS · Odisha · Chhattisgarh
+        </div>
     </div>
-    ${u.role==="admin" ? `
-    <div class="card" style="margin-top:12px">
-      <h2 style="margin-top:0">${T.alert}</h2>
-      <p class="muted">${T.alertHelp}</p>
-      <div class="row">${days.map(n => `<button class="chip ${(DB.alertDays||[]).includes(n)?"on":""}" data-day="${n}">${n===0?t().today:n}</button>`).join("")}</div>
-    </div>` : ""}
-    <p style="margin-top:16px"><button class="btn btn-s" id="signOut">${T.out}</button></p>`;
-}
 
-function esc(s) {
-  return String(s || "").replace(/[&<>"']/g, function (c) {
-    if (c === "&") return "&" + "amp;";
-    if (c === "<") return "&" + "lt;";
-    if (c === ">") return "&" + "gt;";
-    if (c === '"') return "&" + "quot;";
-    return "&#39;";
-  });
-}
+    <!-- Right Login Section -->
+    <div class="right-panel">
+        <div class="role-tabs">
+            <div class="role-tab active">दुकान / एडमिन</div>
+            <div class="role-tab">ग्राहक / ट्रांसपोर्टर</div>
+        </div>
 
-function bind() {
-  document.querySelectorAll("[data-tab]").forEach(b => b.onclick = () => {
-    document.querySelectorAll("[data-tab]").forEach(x => x.classList.toggle("on", x===b));
-    document.getElementById("shopForm").classList.toggle("hide", b.dataset.tab!=="shop");
-    document.getElementById("custForm").classList.toggle("hide", b.dataset.tab!=="cust");
-  });
-  const shopLogin = document.getElementById("shopLogin");
-  if (shopLogin) shopLogin.onclick = () => {
-    const email = (document.getElementById("shopEmail").value||"").trim().toLowerCase();
-    const pass = document.getElementById("shopPass").value;
-    const u = DB.users.find(x => x.role==="admin" && x.email===email && x.password===pass);
-    if (!u) return toast("Login?");
-    DB.session = u.id; save(DB); page="dash"; render();
-  };
-  const shopCreate = document.getElementById("shopCreate");
-  if (shopCreate) shopCreate.onclick = () => {
-    const name = (document.getElementById("shopName").value||"").trim();
-    const email = (document.getElementById("shopEmail").value||"").trim().toLowerCase();
-    const pass = document.getElementById("shopPass").value;
-    if (!name || !email) return toast(t().required);
-    if (!pass || pass.length<6) return toast(t().pwMin);
-    if (DB.users.some(x => x.email===email)) return toast(t().dupP);
-    const u = { id: uid(), role: "admin", name, email, password: pass, phone: null, ownerId: null };
-    u.ownerId = u.id;
-    DB.users.push(u); DB.session = u.id; save(DB); toast(t().created); page="dash"; render();
-  };
-  const custLogin = document.getElementById("custLogin");
-  if (custLogin) custLogin.onclick = () => {
-    const phone = phone10(document.getElementById("custPhone").value);
-    const pass = document.getElementById("custPass").value;
-    const u = DB.users.find(x => x.role==="customer" && x.phone===phone && x.password===pass);
-    if (!u) return toast("Login?");
-    DB.session = u.id; save(DB); page="dash"; render();
-  };
-  document.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { page = b.dataset.go; editing=null; render(); });
-  const loadSample = document.getElementById("loadSample");
-  if (loadSample) loadSample.onclick = () => {
-    const u = me();
-    sample().forEach(raw => upsertFromRaw(u.id, raw));
-    toast(t().created); render();
-  };
-  const addV = document.getElementById("addV");
-  if (addV) addV.onclick = () => {
-    editing = {};
-    document.getElementById("editor").innerHTML = formHtml(null);
-    bindForm();
-  };
-  const qV = document.getElementById("qV");
-  if (qV) qV.oninput = () => { filters.q = qV.value; };
-  const qC = document.getElementById("qC");
-  if (qC) qC.oninput = () => { filters.cq = qC.value; };
-  if (qV) qV.onchange = () => render();
-  if (qC) qC.onchange = () => render();
-  document.querySelectorAll("[data-svc]").forEach(b => b.onclick = () => { filters.svc = b.dataset.svc; render(); });
-  document.querySelectorAll("[data-st]").forEach(b => b.onclick = () => { filters.status = filters.status==="red"?"all":"red"; render(); });
-  document.querySelectorAll("[data-edit]").forEach(b => b.onclick = () => {
-    editing = DB.vehicles.find(v => v.id===b.dataset.edit);
-    document.getElementById("editor").innerHTML = formHtml(editing);
-    bindForm();
-  });
-  document.querySelectorAll("[data-del]").forEach(b => b.onclick = () => {
-    if (!confirm(t().del+"?")) return;
-    DB.vehicles = DB.vehicles.filter(v => v.id !== b.dataset.del);
-    save(DB); toast(t().deleted); render();
-  });
-  const makeCust = document.getElementById("makeCust");
-  if (makeCust) makeCust.onclick = () => {
-    const name = (document.getElementById("cName").value||"").trim();
-    const phone = phone10(document.getElementById("cPhone").value);
-    const pass = document.getElementById("cPass").value;
-    const u = me();
-    if (!name) return toast(t().required);
-    if (!phone) return toast(t().badPhone);
-    if (!pass || pass.length<6) return toast(t().pwMin);
-    if (DB.users.some(x => x.ownerId===u.id && x.phone===phone)) return toast(t().dupP);
-    const c = { id: uid(), role: "customer", name, email: phone+"@customer.local", password: pass, phone, ownerId: u.id };
-    DB.users.push(c);
-    DB.vehicles.forEach(v => { if (v.ownerId===u.id && v.customerPhone===phone) v.customerUserId = c.id; });
-    save(DB); toast(t().created); render();
-  };
-  document.querySelectorAll("[data-delc]").forEach(b => b.onclick = () => {
-    DB.vehicles.forEach(v => { if (v.customerUserId===b.dataset.delc) v.customerUserId=null; });
-    DB.users = DB.users.filter(x => x.id !== b.dataset.delc);
-    save(DB); toast(t().deleted); render();
-  });
-  const langHi = document.getElementById("langHi");
-  if (langHi) langHi.onclick = () => { DB.lang="hi"; save(DB); render(); };
-  const langEn = document.getElementById("langEn");
-  if (langEn) langEn.onclick = () => { DB.lang="en"; save(DB); render(); };
-  document.querySelectorAll("[data-day]").forEach(b => b.onclick = () => {
-    const n = Number(b.dataset.day);
-    const set = new Set(DB.alertDays||[]);
-    if (set.has(n)) set.delete(n); else set.add(n);
-    DB.alertDays = [...set].sort((a,c)=>c-a);
-    save(DB); toast(t().saved); render();
-  });
-  const signOut = document.getElementById("signOut");
-  if (signOut) signOut.onclick = () => { DB.session=null; save(DB); page="dash"; render(); };
-}
+        <button class="social-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#EA4335" d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.8 14.8 1 12 1 7.5 1 3.7 3.6 1.8 7.3l3.7 2.9C6.4 7.2 9 5 12 5z"/><path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z"/><path fill="#FBBC05" d="M5.5 14.8c-.2-.7-.4-1.5-.4-2.3s.2-1.6.4-2.3L1.8 7.3C.7 9.5 0 12 0 14.5s.7 5 1.8 7.2l3.7-2.9z"/><path fill="#34A853" d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.6-2.2-6.5-5.2L1.8 16c1.9 3.7 5.7 7 10.2 7z"/></svg>
+            Google से जारी रखें
+        </button>
 
-function bindForm() {
-  const inst = document.getElementById("fInst");
-  const years = document.getElementById("fYears");
-  const preview = () => { document.getElementById("fGpsExp").value = addYears(inst.value, Number(years.value)||0); };
-  inst.oninput = preview; years.onchange = preview;
-  document.getElementById("cancelV").onclick = () => { editing=null; render(); };
-  document.getElementById("saveV").onclick = () => {
-    const u = me();
-    const raw = {
-      customerName: document.getElementById("fName").value,
-      vehicleNumber: document.getElementById("fVeh").value,
-      gpsImei: document.getElementById("fImei").value,
-      gpsInstallDate: document.getElementById("fInst").value,
-      gpsValidityYears: Number(document.getElementById("fYears").value),
-      odishaPermitNo: document.getElementById("fOdNo").value,
-      odishaExpiryDate: document.getElementById("fOdExp").value,
-      cgPermitNo: document.getElementById("fCgNo").value,
-      cgExpiryDate: document.getElementById("fCgExp").value,
-      customerPhone: document.getElementById("fPhone").value
-    };
-    try { upsertFromRaw(u.id, raw, editing && editing.id); toast(t().saved); editing=null; render(); }
-    catch (e) { toast(e.message === "IMEI" ? t().badImei : e.message==="Phone" ? t().badPhone : e.message==="Dup" ? t().dupV : t().required); }
-  };
-}
+        <button class="social-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X से जारी रखें
+        </button>
 
-function upsertFromRaw(ownerId, raw, id) {
-  const vehicleNumber = String(raw.vehicleNumber||"").trim().toUpperCase().replace(/\s+/g,"");
-  const customerName = String(raw.customerName||"").trim();
-  if (!vehicleNumber || !customerName) throw new Error("Required");
-  const imei = digits(raw.gpsImei);
-  if (imei && imei.length !== 15) throw new Error("IMEI");
-  const phone = String(raw.customerPhone||"").trim() ? phone10(raw.customerPhone) : "";
-  if (String(raw.customerPhone||"").trim() && !phone) throw new Error("Phone");
-  const years = Number(raw.gpsValidityYears)||0;
-  const install = String(raw.gpsInstallDate||"").trim();
-  const gpsExpiry = install && years ? addYears(install, years) : "";
-  const cust = DB.users.find(x => x.ownerId===ownerId && x.role==="customer" && x.phone===phone);
-  const dup = DB.vehicles.find(v => v.ownerId===ownerId && v.vehicleNumber===vehicleNumber && v.id!==id);
-  if (dup) throw new Error("Dup");
-  const rec = {
-    id: id || uid(), ownerId, customerUserId: cust ? cust.id : null,
-    customerName, vehicleNumber, gpsImei: imei, gpsInstallDate: install,
-    gpsValidityYears: years||null, gpsExpiryDate: gpsExpiry,
-    odishaPermitNo: String(raw.odishaPermitNo||"").trim(),
-    odishaExpiryDate: String(raw.odishaExpiryDate||"").trim(),
-    cgPermitNo: String(raw.cgPermitNo||"").trim(),
-    cgExpiryDate: String(raw.cgExpiryDate||"").trim(),
-    customerPhone: phone
-  };
-  const i = DB.vehicles.findIndex(v => v.id === rec.id);
-  if (i>=0) DB.vehicles[i] = rec; else DB.vehicles.push(rec);
-  save(DB);
-  return rec;
-}
+        <div class="divider">या दुकान ईमेल</div>
 
-render();
-</script>
+        <div class="input-group">
+            <label>ईमेल</label>
+            <input type="email" placeholder="name@example.com">
+        </div>
+
+        <div class="input-group">
+            <label>पासवर्ड</label>
+            <input type="password" placeholder="••••••••">
+        </div>
+
+        <button class="submit-btn">लॉगिन</button>
+
+        <div class="auth-footer">
+            नई दुकान? <a href="#">खाता बनाएँ</a>
+        </div>
+
+        <div class="lang-options">
+            <button class="lang-btn active">हिन्दी</button>
+            <button class="lang-btn">English</button>
+        </div>
+    </div>
+
 </body>
 </html>
