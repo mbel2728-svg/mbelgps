@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBELGPS - गाड़ियाँ</title>
-    <!-- SheetJS Library Excel Export ke liye -->
+    <!-- SheetJS Library Excel export ke liye -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         body {
@@ -86,7 +86,7 @@
     </table>
 
     <script>
-        // Data Array jise Excel me export karna hai
+        // Aapka vehicles data array
         const vehiclesList = [
             {
                 "गाड़ी नंबर": "OD05AB4521",
@@ -106,21 +106,21 @@
             }
         ];
 
-        // Excel Export Function
+        // Ekdum sahi aur working export function
         function exportToExcel() {
             if (typeof vehiclesList === 'undefined' || vehiclesList.length === 0) {
                 alert("Export karne ke liye koi data available nahi hai!");
                 return;
             }
 
-            // Data ko worksheet me convert karein
+            // Data ko worksheet me convert karna
             const worksheet = XLSX.utils.json_to_sheet(vehiclesList);
             
-            // Workbook banayein aur worksheet add karein
+            // Workbook create karna
             const workbook = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(workbook, worksheet, "Gadiyan Data");
             
-            // Excel file download trigger karein
+            // Excel file (.xlsx) download trigger karna
             XLSX.writeFile(workbook, "MBELGPS_Gadiyan_Data.xlsx");
         }
     </script>
