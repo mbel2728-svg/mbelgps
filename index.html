@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0c0d0b" />
 <title>VaahanDesk</title>
+<!-- SheetJS Library Excel Export/Import ke liye -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg:#0c0d0b; --fg:#eceae4; --card:#151613; --muted:#9a978c;
@@ -299,6 +301,77 @@ input, select {
     persist();
   }
 
+  function exportToExcel() {
+    var list = myVehicles();
+    if (!list || list.length === 0) {
+      flash("Export karne ke liye koi data available nahi hai!");
+      render();
+      return;
+    }
+    var exportData = list.map(function(v) {
+      return {
+        "गाड़ी नंबर": v.vehicleNumber,
+        "ग्राहक का नाम": v.customerName,
+        "मोबाइल नंबर": v.customerPhone || "",
+        "GPS IMEI": v.gpsImei || "",
+        "GPS इंस्टॉल तिथि": v.gpsInstallDate || "",
+        "GPS वैधता (वर्ष)": v.gpsValidityYears || "",
+        "GPS समाप्ति तिथि": v.gpsExpiryDate || "",
+        "ओडिशा परमिट नं.": v.odishaPermitNo || "",
+        "ओडिशा समाप्ति तिथि": v.odishaExpiryDate || "",
+        "छत्तीसगढ़ परमिट नं.": v.cgPermitNo || "",
+        "छत्तीसगढ़ समाप्ति तिथि": v.cgExpiryDate || ""
+      };
+    });
+    var worksheet = XLSX.utils.json_to_sheet(exportData);
+    var workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "VaahanDesk Vehicles");
+    XLSX.writeFile(workbook, "VaahanDesk_Vehicles.xlsx");
+  }
+
+  function importFromExcel(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        var data = new Uint8Array(evt.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+        var firstSheetName = workbook.SheetNames[0];
+        var worksheet = workbook.Sheets[firstSheetName];
+        var json = XLSX.utils.sheet_to_json(worksheet);
+        var admin = me();
+        if (!admin || admin.role !== "admin") return;
+        var count = 0;
+        for (var i = 0; i < json.length; i++) {
+          var row = json[i];
+          var raw = {
+            vehicleNumber: row["गाड़ी नंबर"] || row["vehicleNumber"] || "",
+            customerName: row["ग्राहक का नाम"] || row["customerName"] || "",
+            customerPhone: row["मोबाइल नंबर"] || row["customerPhone"] || "",
+            gpsImei: row["GPS IMEI"] || row["gpsImei"] || "",
+            gpsInstallDate: row["GPS इंस्टॉल तिथि"] || row["gpsInstallDate"] || "",
+            gpsValidityYears: row["GPS वैधता (वर्ष)"] || row["gpsValidityYears"] || 1,
+            odishaPermitNo: row["ओडिशा परमिट नं."] || row["odishaPermitNo"] || "",
+            odishaExpiryDate: row["ओडिशा समाप्ति तिथि"] || row["odishaExpiryDate"] || "",
+            cgPermitNo: row["छत्तीसगढ़ परमिट नं."] || row["cgPermitNo"] || "",
+            cgExpiryDate: row["छत्तीसगढ़ समाप्ति तिथि"] || row["cgExpiryDate"] || ""
+          };
+          try {
+            upsert(admin.id, raw);
+            count++;
+          } catch(err) {}
+        }
+        flash(count + " गाड़ियाँ सफलतापूर्वक इम्पोर्ट हो गईं!", "ok");
+        render();
+      } catch (err) {
+        flash("Excel file padhne me samasya aayi!");
+        render();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
   function openDemo() {
     var admin = null;
     for (var i=0;i<DB.users.length;i++) if (DB.users[i].email==="demo@vaahandesk.local") admin = DB.users[i];
@@ -405,8 +478,8 @@ input, select {
     var html = banner()+'<div class="row" style="justify-content:space-between"><h1 style="margin:0">'+L.vehicles+'</h1>'+
       (u.role==="admin" ? '<div class="row" style="gap:6px">' +
         '<button type="button" class="btn btn-s" data-act="addv" style="width:auto">'+L.add+'</button>' +
-        '<button type="button" class="btn btn-s" data-act="export-csv" style="width:auto">📥 '+L.exportExcel+'</button>' +
-        '<label class="btn btn-s" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="csvFileIn" accept=".csv" style="display:none" /></label>' +
+        '<button type="button" class="btn btn-s" data-act="export-excel" style="width:auto">📥 '+L.exportExcel+'</button>' +
+        '<label class="btn btn-s" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="excelFileIn" accept=".xlsx, .xls, .csv" style="display:none" /></label>' +
         '</div>' : '') + '</div>'+
       '<div class="grid g2" style="margin:12px 0">'+
         '<input id="qV" placeholder="'+L.searchV+'" value="'+esc(filters.q)+'" />'+
@@ -509,6 +582,10 @@ input, select {
       var ed = document.getElementById("editor");
       if (ed) ed.innerHTML = formHtml(editing.id ? editing : null);
     }
+    var fileInput = document.getElementById("excelFileIn");
+    if (fileInput) {
+      fileInput.onchange = importFromExcel;
+    }
   }
 
   function findUser(pred) {
@@ -520,6 +597,7 @@ input, select {
     var L = T();
     msg = "";
     if (act==="demo") return openDemo();
+    if (act==="export-excel") return exportToExcel();
     if (act==="tab-shop") {
       document.getElementById("shopForm").classList.remove("hide");
       document.getElementById("custForm").classList.add("hide");
@@ -570,11 +648,100 @@ input, select {
     }
     if (act==="addv") { editing = {}; page="vehicles"; render(); document.getElementById("editor").innerHTML = formHtml(null); return; }
     if (act==="svc") { filters.svc = el.getAttribute("data-id"); return render(); }
+    if (act==="st-red") { filters.status = filters.status==="red"?"all":"red"; return render(); }
+    if (act==="edit") {
+      var id = el.getAttribute("data-id");
+      var vs = myVehicles();
+      for (var i=0;i<vs.length;i++) if (vs[i].id===id) editing = vs[i];
+      render(); return;
+    }
+    if (act==="delv") {
+      var id = el.getAttribute("data-id");
+      DB.vehicles = DB.vehicles.filter(function(x){ return x.id!==id; });
+      persist(); flash(L.deleted,"ok"); return render();
+    }
+    if (act==="savev") {
+      var admin = me();
+      var raw = {
+        customerName: val("fName"),
+        vehicleNumber: val("fVeh"),
+        gpsImei: val("fImei"),
+        customerPhone: val("fPhone"),
+        gpsInstallDate: val("fInst"),
+        gpsValidityYears: val("fYears"),
+        odishaPermitNo: val("fOdNo"),
+        odishaExpiryDate: val("fOdExp"),
+        cgPermitNo: val("fCgNo"),
+        cgExpiryDate: val("fCgExp")
+      };
+      try {
+        upsert(admin.id, raw, editing && editing.id ? editing.id : null);
+        editing = null; flash(L.saved, "ok"); render();
+      } catch (err) {
+        flash(err.message); render();
+      }
+      return;
+    }
+    if (act==="cancelv") { editing = null; render(); return; }
+    if (act==="make-cust") {
+      var admin = me();
+      var cname = (val("cName")||"").trim();
+      var cphone = phone10(val("cPhone"));
+      var cpass = (val("cPass")||"").trim();
+      if (!cname || !cphone || !cpass) { flash(L.required); return render(); }
+      var exist = findUser(function(x){ return x.role==="customer" && x.ownerId===admin.id && x.phone===cphone; });
+      if (exist) { flash(L.dupP); return render(); }
+      var cu = { id:uid(), role:"customer", name:cname, email:null, password:cpass, phone:cphone, ownerId:admin.id };
+      DB.users.push(cu);
+      persist(); flash(L.created, "ok"); render();
+      return;
+    }
+    if (act==="delc") {
+      var cid = el.getAttribute("data-id");
+      DB.users = DB.users.filter(function(x){ return x.id!==cid; });
+      persist(); flash(L.deleted, "ok"); render();
+      return;
+    }
+    if (act==="day") {
+      var d = Number(el.getAttribute("data-id"));
+      var idx = (DB.alertDays||[]).indexOf(d);
+      if (idx>=0) DB.alertDays.splice(idx,1); else DB.alertDays.push(d);
+      persist(); render(); return;
+    }
+    if (act==="lang-hi") { DB.lang="hi"; persist(); render(); return; }
+    if (act==="lang-en") { DB.lang="en"; persist(); render(); return; }
+    if (act==="out") { DB.session=null; persist(); page="dash"; editing=null; render(); return; }
   }
 
   document.addEventListener("click", function(e) {
-    var el = e.target.closest("[data-act]");
-    if (el) onAct(el.getAttribute("data-act"), el);
+    var t = e.target;
+    while (t && t !== document) {
+      var act = t.getAttribute("data-act");
+      if (act) {
+        onAct(act, t);
+        break;
+      }
+      t = t.parentNode;
+    }
+  });
+
+  document.addEventListener("input", function(e) {
+    if (e.target.id === "qV") {
+      filters.q = e.target.value;
+      render();
+    }
+    if (e.target.id === "qC") {
+      filters.cq = e.target.value;
+      render();
+    }
+    if (e.target.id === "fInst" || e.target.id === "fYears") {
+      var inst = val("fInst");
+      var yrs = Number(val("fYears")) || 1;
+      var expEl = document.getElementById("fGpsExp");
+      if (expEl && inst) {
+        expEl.value = addYears(inst, yrs);
+      }
+    }
   });
 
   render();
