@@ -110,8 +110,8 @@ input, select {
     required:"नाम और गाड़ी नंबर ज़रूरी", badImei:"IMEI 15 अंक का हो", badPhone:"10 अंक का मोबाइल",
     dupV:"यह गाड़ी नंबर पहले से है", dupP:"यह मोबाइल पहले से है", saved:"सेव हो गया",
     created:"बन गया", deleted:"हट गया", viewOnly:"केवल देखने के लिए。",
-    exportExcel:"गाड़ियाँ एक्सपोर्ट करें (Excel)",
-    importExcel:"गाड़ियाँ इम्पोर्ट करें (Excel)"
+    exportExcel:"Export Vehicles (Excel)",
+    importExcel:"Import Vehicles (Excel)"
   };
   var EN = {
     app:"VaahanDesk", tag:"GPS · Odisha · Chhattisgarh mining desk",
@@ -310,17 +310,14 @@ input, select {
     }
     var exportData = list.map(function(v) {
       return {
-        "गाड़ी नंबर": v.vehicleNumber,
-        "ग्राहक का नाम": v.customerName,
-        "मोबाइल नंबर": v.customerPhone || "",
+        "CUSTOMER NAME": v.customerName || "",
+        "MOBILE NUMBER": v.customerPhone || "",
+        "VEHICLE NUMBER": v.vehicleNumber || "",
         "GPS IMEI": v.gpsImei || "",
-        "GPS इंस्टॉल तिथि": v.gpsInstallDate || "",
-        "GPS वैधता (वर्ष)": v.gpsValidityYears || "",
-        "GPS समाप्ति तिथि": v.gpsExpiryDate || "",
-        "ओडिशा परमिट नं.": v.odishaPermitNo || "",
-        "ओडिशा समाप्ति तिथि": v.odishaExpiryDate || "",
-        "छत्तीसगढ़ परमिट नं.": v.cgPermitNo || "",
-        "छत्तीसगढ़ समाप्ति तिथि": v.cgExpiryDate || ""
+        "GPS INSTALLATION DATE": v.gpsInstallDate || "",
+        "GPS EXPIRY DATE": v.gpsExpiryDate || "",
+        "OD MINING EXPIRY DATE": v.odishaExpiryDate || "",
+        "CG MINING EXPIRY DATE": v.cgExpiryDate || ""
       };
     });
     var worksheet = XLSX.utils.json_to_sheet(exportData);
@@ -346,23 +343,21 @@ input, select {
         for (var i = 0; i < json.length; i++) {
           var row = json[i];
           var raw = {
-            vehicleNumber: row["गाड़ी नंबर"] || row["vehicleNumber"] || "",
-            customerName: row["ग्राहक का नाम"] || row["customerName"] || "",
-            customerPhone: row["मोबाइल नंबर"] || row["customerPhone"] || "",
+            customerName: row["CUSTOMER NAME"] || row["customerName"] || "",
+            customerPhone: row["MOBILE NUMBER"] || row["customerPhone"] || "",
+            vehicleNumber: row["VEHICLE NUMBER"] || row["vehicleNumber"] || "",
             gpsImei: row["GPS IMEI"] || row["gpsImei"] || "",
-            gpsInstallDate: row["GPS इंस्टॉल तिथि"] || row["gpsInstallDate"] || "",
-            gpsValidityYears: row["GPS वैधता (वर्ष)"] || row["gpsValidityYears"] || 1,
-            odishaPermitNo: row["ओडिशा परमिट नं."] || row["odishaPermitNo"] || "",
-            odishaExpiryDate: row["ओडिशा समाप्ति तिथि"] || row["odishaExpiryDate"] || "",
-            cgPermitNo: row["छत्तीसगढ़ परमिट नं."] || row["cgPermitNo"] || "",
-            cgExpiryDate: row["छत्तीसगढ़ समाप्ति तिथि"] || row["cgExpiryDate"] || ""
+            gpsInstallDate: row["GPS INSTALLATION DATE"] || row["gpsInstallDate"] || "",
+            gpsValidityYears: 1,
+            odishaExpiryDate: row["OD MINING EXPIRY DATE"] || row["odishaExpiryDate"] || "",
+            cgExpiryDate: row["CG MINING EXPIRY DATE"] || row["cgExpiryDate"] || ""
           };
           try {
             upsert(admin.id, raw);
             count++;
           } catch(err) {}
         }
-        flash(count + " गाड़ियाँ सफलतापूर्वक इम्पोर्ट हो गईं!", "ok");
+        flash(count + " gaड़ियाँ सफलतापूर्वक इम्पोर्ट हो गईं!", "ok");
         render();
       } catch (err) {
         flash("Excel file padhne me samasya aayi!");
