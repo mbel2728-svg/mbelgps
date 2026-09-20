@@ -225,7 +225,7 @@ input, select {
     var d = s.days, name = v.customerName || "";
     if (DB.lang === "hi") {
       var when = d < 0 ? (Math.abs(d)+" दिन पहले समाप्त हो चुकी है") : (d===0 ? "आज समाप्त हो रही है" : (d+" दिन में समाप्त हो रही है ("+s.date+")"));
-      return "नमस्ते "+name+" जी,\nआपकी गाड़ी "+v.vehicleNumber+" की "+s.label+" वैधता "+when+"。\nकृपया समय रहते रिन्यू करवा लें।\n— VaahanDesk";
+      return "नमस्ते "+name+" जी,\nआपकी गाड़ी "+v.vehicleNumber+" की "+s.label+" वैधता "+when+"。\nकृपया समय रहते रिन्यू करवा लें。\n— VaahanDesk";
     }
     var when2 = d < 0 ? ("expired "+Math.abs(d)+" days ago") : (d===0 ? "expires today" : ("expires in "+d+" days ("+s.date+")"));
     return "Hello "+name+",\nVehicle "+v.vehicleNumber+" "+s.label+" "+when2+".\nPlease renew on time.\n— VaahanDesk";
@@ -243,12 +243,12 @@ input, select {
   }
   function samples() {
     return [
-      {customerName:"राम ट्रांसपोर्ट",vehicleNumber:"OD05AB4521",gpsImei:"869451032211547",gpsInstallDate:shift(-340),gpsValidityYears:1,odishaPermitNo:"OD-MP-8821",odishaExpiryDate:shift(5),cgPermitNo:"CG-TR-4410",cgExpiryDate:shift(48),customerPhone:"9876500101"},
-      {customerName:"शुभम माइनिंग",vehicleNumber:"CG04CD8890",gpsImei:"869451032211548",gpsInstallDate:shift(-700),gpsValidityYears:2,odishaPermitNo:"",odishaExpiryDate:"",cgPermitNo:"CG-MN-2291",cgExpiryDate:shift(-3),customerPhone:"9876500102"},
-      {customerName:"जय जगन्नाथ ट्रांसपोर्ट",vehicleNumber:"OD09EF2211",gpsImei:"869451032211549",gpsInstallDate:shift(-20),gpsValidityYears:1,odishaPermitNo:"OD-KS-1102",odishaExpiryDate:shift(14),cgPermitNo:"CG-JS-8802",cgExpiryDate:shift(21),customerPhone:"9876500103"},
-      {customerName:"बस्तर लॉजिस्टिक्स",vehicleNumber:"CG07GH3344",gpsImei:"869451032211550",gpsInstallDate:shift(-80),gpsValidityYears:1,odishaPermitNo:"OD-BP-6711",odishaExpiryDate:shift(62),cgPermitNo:"CG-BS-0199",cgExpiryDate:shift(0),customerPhone:"9876500104"},
-      {customerName:"महालक्ष्मी डम्पर",vehicleNumber:"OD11JK7788",gpsImei:"869451032211551",gpsInstallDate:shift(-400),gpsValidityYears:2,odishaPermitNo:"OD-SB-4408",odishaExpiryDate:shift(-12),cgPermitNo:"",cgExpiryDate:"",customerPhone:"9876500105"},
-      {customerName:"साई माइनिंग",vehicleNumber:"CG10LM9901",gpsImei:"869451032211552",gpsInstallDate:shift(-10),gpsValidityYears:1,odishaPermitNo:"OD-AN-9088",odishaExpiryDate:shift(90),cgPermitNo:"CG-RG-3301",cgExpiryDate:shift(11),customerPhone:"9876500106"}
+      {customerName:"Ram Transport",vehicleNumber:"OD05AB4521",gpsImei:"869451032211547",gpsInstallDate:shift(-340),gpsValidityYears:1,odishaPermitNo:"OD-MP-8821",odishaExpiryDate:shift(5),cgPermitNo:"CG-TR-4410",cgExpiryDate:shift(48),customerPhone:"9876500101"},
+      {customerName:"Shubham Mining",vehicleNumber:"CG04CD8890",gpsImei:"869451032211548",gpsInstallDate:shift(-700),gpsValidityYears:2,odishaPermitNo:"",odishaExpiryDate:"",cgPermitNo:"CG-MN-2291",cgExpiryDate:shift(-3),customerPhone:"9876500102"},
+      {customerName:"Jai Jagannath Transport",vehicleNumber:"OD09EF2211",gpsImei:"869451032211549",gpsInstallDate:shift(-20),gpsValidityYears:1,odishaPermitNo:"OD-KS-1102",odishaExpiryDate:shift(14),cgPermitNo:"CG-JS-8802",cgExpiryDate:shift(21),customerPhone:"9876500103"},
+      {customerName:"Bastar Logistics",vehicleNumber:"CG07GH3344",gpsImei:"869451032211550",gpsInstallDate:shift(-80),gpsValidityYears:1,odishaPermitNo:"OD-BP-6711",odishaExpiryDate:shift(62),cgPermitNo:"CG-BS-0199",cgExpiryDate:shift(0),customerPhone:"9876500104"},
+      {customerName:"Mahalaxmi Dumper",vehicleNumber:"OD11JK7788",gpsImei:"869451032211551",gpsInstallDate:shift(-400),gpsValidityYears:2,odishaPermitNo:"OD-SB-4408",odishaExpiryDate:shift(-12),cgPermitNo:"",cgExpiryDate:"",customerPhone:"9876500105"},
+      {customerName:"Sai Mining",vehicleNumber:"CG10LM9901",gpsImei:"869451032211552",gpsInstallDate:shift(-10),gpsValidityYears:1,odishaPermitNo:"OD-AN-9088",odishaExpiryDate:shift(90),cgPermitNo:"CG-RG-3301",cgExpiryDate:shift(11),customerPhone:"9876500106"}
     ];
   }
   function esc(s) {
@@ -570,175 +570,11 @@ input, select {
     }
     if (act==="addv") { editing = {}; page="vehicles"; render(); document.getElementById("editor").innerHTML = formHtml(null); return; }
     if (act==="svc") { filters.svc = el.getAttribute("data-id"); return render(); }
-    if (act==="st-red") {
-      filters.status = filters.status === "red" ? "all" : "red";
-      return render();
-    }
-    if (act==="edit") {
-      var id = el.getAttribute("data-id");
-      for (var i=0;i<DB.vehicles.length;i++) if (DB.vehicles[i].id===id) editing = DB.vehicles[i];
-      page = "vehicles";
-      render();
-      return;
-    }
-    if (act==="delv") {
-      var id = el.getAttribute("data-id");
-      DB.vehicles = DB.vehicles.filter(function(x){ return x.id!==id; });
-      persist();
-      flash(L.deleted,"ok");
-      return render();
-    }
-    if (act==="savev") {
-      var admin = me();
-      try {
-        upsert(admin.id, {
-          customerName: val("fName"),
-          vehicleNumber: val("fVeh"),
-          gpsImei: val("fImei"),
-          customerPhone: val("fPhone"),
-          gpsInstallDate: val("fInst"),
-          gpsValidityYears: val("fYears"),
-          odishaPermitNo: val("fOdNo"),
-          odishaExpiryDate: val("fOdExp"),
-          cgPermitNo: val("fCgNo"),
-          cgExpiryDate: val("fCgExp")
-        }, editing && editing.id ? editing.id : null);
-        editing = null;
-        flash(L.saved, "ok");
-      } catch(e) {
-        flash(e.message);
-      }
-      return render();
-    }
-    if (act==="cancelv") {
-      editing = null;
-      return render();
-    }
-    if (act==="make-cust") {
-      var admin = me();
-      var name = (val("cName")||"").trim();
-      var phone = phone10(val("cPhone"));
-      var pass = (val("cPass")||"").trim();
-      if (!name || !phone || !pass) { flash(L.required); return render(); }
-      var exist = findUser(function(x){ return x.role==="customer" && x.phone===phone && x.ownerId===admin.id; });
-      if (exist) { flash(L.dupP); return render(); }
-      var cust = { id: uid(), role:"customer", name:name, phone:phone, password:pass, ownerId:admin.id, email:null };
-      DB.users.push(cust);
-      persist();
-      flash(L.created, "ok");
-      return render();
-    }
-    if (act==="delc") {
-      var cid = el.getAttribute("data-id");
-      DB.users = DB.users.filter(function(x){ return x.id!==cid; });
-      persist();
-      flash(L.deleted, "ok");
-      return render();
-    }
-    if (act==="day") {
-      var d = Number(el.getAttribute("data-id"));
-      var idx = DB.alertDays.indexOf(d);
-      if (idx>=0) DB.alertDays.splice(idx,1); else DB.alertDays.push(d);
-      DB.alertDays.sort(function(a,b){return b-a;});
-      persist();
-      return render();
-    }
-    if (act==="lang-hi") { DB.lang="hi"; persist(); return render(); }
-    if (act==="lang-en") { DB.lang="en"; persist(); return render(); }
-    if (act==="out") { DB.session=null; persist(); page="dash"; return render(); }
-    if (act==="export-csv") {
-      var vs = myVehicles();
-      var csv = "CUSTOMER,VEHICLE,IMEI,INSTALL DATE,VALIDITY YEARS,ODISHA PERMIT,ODISHA EXPIRY,CG PERMIT,CG EXPIRY,PHONE\n";
-      for (var i=0; i<vs.length; i++) {
-        var v = vs[i];
-        var row = [
-          '"' + (v.customerName||"").replace(/"/g,'""') + '"',
-          '"' + (v.vehicleNumber||"").replace(/"/g,'""') + '"',
-          '"' + (v.gpsImei||"").replace(/"/g,'""') + '"',
-          '"' + (v.gpsInstallDate||"") + '"',
-          '"' + (v.gpsValidityYears||"") + '"',
-          '"' + (v.odishaPermitNo||"").replace(/"/g,'""') + '"',
-          '"' + (v.odishaExpiryDate||"") + '"',
-          '"' + (v.cgPermitNo||"").replace(/"/g,'""') + '"',
-          '"' + (v.cgExpiryDate||"") + '"',
-          '"' + (v.customerPhone||"") + '"'
-        ].join(",");
-        csv += row + "\n";
-      }
-      var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = 'VaahanDesk_Vehicles.csv';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      return;
-    }
   }
 
   document.addEventListener("click", function(e) {
     var el = e.target.closest("[data-act]");
-    if (el) {
-      var act = el.getAttribute("data-act");
-      onAct(act, el);
-    }
-  });
-
-  document.addEventListener("input", function(e) {
-    if (e.target.id === "qV") { filters.q = e.target.value; render(); }
-    if (e.target.id === "qC") { filters.cq = e.target.value; render(); }
-    if (e.target.id === "fInst" || e.target.id === "fYears") {
-      var inst = val("fInst");
-      var yrs = Number(val("fYears")) || 1;
-      var expEl = document.getElementById("fGpsExp");
-      if (expEl) expEl.value = inst ? addYears(inst, yrs) : "";
-    }
-  });
-
-  document.addEventListener("change", function(e) {
-    if (e.target.id === "csvFileIn") {
-      var file = e.target.files[0];
-      if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function(evt) {
-        try {
-          var lines = evt.target.result.split(/\r\n|\n/);
-          var admin = me();
-          var count = 0;
-          for (var i=1; i<lines.length; i++) {
-            var line = lines[i].trim();
-            if (!line) continue;
-            var cols = line.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/);
-            if (cols.length >= 2) {
-              var clean = function(s) { return s ? s.replace(/^"|"$/g, '').trim() : ''; };
-              var raw = {
-                customerName: clean(cols[0]),
-                vehicleNumber: clean(cols[1]),
-                gpsImei: clean(cols[2]),
-                gpsInstallDate: clean(cols[3]),
-                gpsValidityYears: clean(cols[4]),
-                odishaPermitNo: clean(cols[5]),
-                odishaExpiryDate: clean(cols[6]),
-                cgPermitNo: clean(cols[7]),
-                cgExpiryDate: clean(cols[8]),
-                customerPhone: clean(cols[9])
-              };
-              try {
-                upsert(admin.id, raw);
-                count++;
-              } catch(err) {}
-            }
-          }
-          flash(count + " vehicles imported successfully!", "ok");
-          render();
-        } catch(err) {
-          flash("Import error: " + err.message);
-          render();
-        }
-      };
-      reader.readAsText(file);
-    }
+    if (el) onAct(el.getAttribute("data-act"), el);
   });
 
   render();
