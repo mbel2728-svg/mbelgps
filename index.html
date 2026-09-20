@@ -636,7 +636,8 @@ input, select {
         csvRows.push(row.join(","));
       }
       
-      var blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+      // UTF-8 BOM जोड़ना ताकि Excel में हिंदी/इंग्लिश अक्षर सही दिखें (चाइनीज सिंबल न आएं)
+      var blob = new Blob(["\uFEFF" + csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a');
       a.href = url;
