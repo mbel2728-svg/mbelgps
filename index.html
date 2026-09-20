@@ -1,6 +1,86 @@
-if (act==="export-csv") {
+if (act==="st-red") {
+      filters.status = filters.status === "red" ? "all" : "red";
+      return render();
+    }
+    if (act==="edit") {
+      var id = el.getAttribute("data-id");
+      for (var j=0; j<DB.vehicles.length; j++) {
+        if (DB.vehicles[j].id === id) editing = DB.vehicles[j];
+      }
+      render();
+      return;
+    }
+    if (act==="delv") {
+      var did = el.getAttribute("data-id");
+      DB.vehicles = DB.vehicles.filter(function(v){ return v.id !== did; });
+      persist();
+      flash(L.deleted, "ok");
+      return render();
+    }
+    if (act==="cancelv") {
+      editing = null;
+      return render();
+    }
+    if (act==="savev") {
+      var admin = me();
+      var raw = {
+        customerName: val("fName"),
+        vehicleNumber: val("fVeh"),
+        gpsImei: val("fImei"),
+        customerPhone: val("fPhone"),
+        gpsInstallDate: val("fInst"),
+        gpsValidityYears: val("fYears"),
+        odishaPermitNo: val("fOdNo"),
+        odishaExpiryDate: val("fOdExp"),
+        cgPermitNo: val("fCgNo"),
+        cgExpiryDate: val("fCgExp")
+      };
+      try {
+        upsert(admin.ownerId || admin.id, raw, editing && editing.id ? editing.id : null);
+        editing = null;
+        flash(L.saved, "ok");
+      } catch (err) {
+        flash(err.message, "err");
+      }
+      return render();
+    }
+    if (act==="make-cust") {
+      var admin = me();
+      var name = (val("cName")||"").trim();
+      var phone = phone10(val("cPhone"));
+      var pass = val("cPass");
+      if (!name || !phone || !pass) { flash(L.required); return render(); }
+      if (phone.length !== 10) { flash(L.badPhone); return render(); }
+      var exist = findUser(function(x){ return x.role==="customer" && x.phone===phone && x.ownerId===admin.id; });
+      if (exist) { flash(L.dupP); return render(); }
+      var cUser = { id: uid(), role: "customer", name: name, email: null, password: pass, phone: phone, ownerId: admin.id };
+      DB.users.push(cUser);
+      persist();
+      flash(L.created, "ok");
+      return render();
+    }
+    if (act==="delc") {
+      var cid = el.getAttribute("data-id");
+      DB.users = DB.users.filter(function(u){ return u.id !== cid; });
+      persist();
+      flash(L.deleted, "ok");
+      return render();
+    }
+    if (act==="day") {
+      var dVal = Number(el.getAttribute("data-id"));
+      var idx = DB.alertDays.indexOf(dVal);
+      if (idx >= 0) DB.alertDays.splice(idx, 1);
+      else DB.alertDays.push(dVal);
+      DB.alertDays.sort(function(a,b){ return b-a; });
+      persist();
+      return render();
+    }
+    if (act==="lang-hi") { DB.lang = "hi"; persist(); return render(); }
+    if (act==="lang-en") { DB.lang = "en"; persist(); return render(); }
+    if (act==="out") { DB.session = null; persist(); page = "dash"; return render(); }
+    if (act==="export-csv") {
       var vs = myVehicles();
-      var csv = "CUSTOMER NAME,VEHICLE NUMBER,GPS IMEI,INSTALL DATE,VALIDITY YEARS,ODISHA PERMIT,ODISHA EXPIRY,CG PERMIT,CG EXPIRY,PHONE\n";
+     var csv = "CUSTOMER,VEHICLE,IMEI,INSTALL DATE,VALIDITY YEARS,ODISHA PERMIT,ODISHA EXPIRY,CG PERMIT,CG EXPIRY,PHONE\n";
       for (var i=0; i<vs.length; i++) {
         var v = vs[i];
         csv += [v.customerName, v.vehicleNumber, v.gpsImei, v.gpsInstallDate, v.gpsValidityYears, v.odishaPermitNo, v.odishaExpiryDate, v.cgPermitNo, v.cgExpiryDate, v.customerPhone].join(",") + "\n";
@@ -13,3 +93,70 @@ if (act==="export-csv") {
       a.click();
       return;
     }
+  }
+
+  document.addEventListener("click", function(e){
+    var el = e.target.closest("[data-act]");
+    if (el) {
+      onAct(el.getAttribute("data-act"), el);
+    }
+  });
+
+  document.addEventListener("input", function(e){
+    if (e.target.id === "qV") {
+      filters.q = e.target.value;
+      render();
+    }
+    if (e.target.id === "qC") {
+      filters.cq = e.target.value;
+      render();
+    }
+    if (e.target.id === "fInst" || e.target.id === "fYears") {
+      var dt = val("fInst");
+      var yr = Number(val("fYears")) || 0;
+      var expInput = document.getElementById("fGpsExp");
+      if (expInput) expInput.value = dt && yr ? addYears(dt, yr) : "";
+    }
+  });
+
+  document.addEventListener("change", function(e){
+    if (e.target.id === "csvFileIn") {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        var lines = evt.target.result.split("\n");
+        var admin = me();
+        var count = 0;
+        for (var i=1; i<lines.length; i++) {
+          var cols = lines[i].split(",");
+          if (cols.length >= 2 && cols[1].trim()) {
+            try {
+              upsert(admin.ownerId || admin.id, {
+                customerName: cols[0],
+                vehicleNumber: cols[1],
+                gpsImei: cols[2],
+                gpsInstallDate: cols[3],
+                gpsValidityYears: cols[4],
+                odishaPermitNo: cols[5],
+                odishaExpiryDate: cols[6],
+                cgPermitNo: cols[7],
+                cgExpiryDate: cols[8],
+                customerPhone: cols[9]
+              });
+              count++;
+            } catch (ex) {}
+          }
+        }
+        flash(count + " vehicles imported successfully.", "ok");
+        render();
+      };
+      reader.readAsText(file);
+    }
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
