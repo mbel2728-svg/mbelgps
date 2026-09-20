@@ -107,7 +107,9 @@ input, select {
     badCust:"मोबाइल/पासवर्ड गलत।", pwMin:"पासवर्ड कम से कम 6 अक्षर",
     required:"नाम और गाड़ी नंबर ज़रूरी", badImei:"IMEI 15 अंक का हो", badPhone:"10 अंक का मोबाइल",
     dupV:"यह गाड़ी नंबर पहले से है", dupP:"यह मोबाइल पहले से है", saved:"सेव हो गया",
-    created:"बन गया", deleted:"हट गया", viewOnly:"केवल देखने के लिए।"
+    created:"बन गया", deleted:"हट गया", viewOnly:"केवल देखने के लिए。",
+    exportExcel:"गाड़ियाँ एक्सपोर्ट करें (Excel)",
+    importExcel:"गाड़ियाँ इम्पोर्ट करें (Excel)"
   };
   var EN = {
     app:"VaahanDesk", tag:"GPS · Odisha · Chhattisgarh mining desk",
@@ -134,7 +136,9 @@ input, select {
     badCust:"Wrong mobile/password.", pwMin:"Password at least 6 characters",
     required:"Name and vehicle number required", badImei:"IMEI must be 15 digits", badPhone:"10-digit mobile",
     dupV:"Vehicle number already exists", dupP:"This mobile already exists", saved:"Saved",
-    created:"Created", deleted:"Deleted", viewOnly:"View only."
+    created:"Created", deleted:"Deleted", viewOnly:"View only.",
+    exportExcel:"Export Vehicles (Excel)",
+    importExcel:"Import Vehicles (Excel)"
   };
   function T() { return DB.lang === "en" ? EN : HI; }
   function flash(text, kind) { msg = text || ""; msgKind = kind || "err"; }
@@ -397,14 +401,20 @@ input, select {
       if (filters.status==="red") { var w=worst(v); if (w!=="red"&&w!=="expired") continue; }
       out.push(v);
     }
+    
     var html = banner()+'<div class="row" style="justify-content:space-between"><h1 style="margin:0">'+L.vehicles+'</h1>'+
-      (u.role==="admin"?'<button type="button" class="btn btn-p" data-act="addv" style="width:auto">'+L.add+'</button>':'')+'</div>'+
+      (u.role==="admin" ? '<div class="row" style="gap:6px">' +
+        '<button type="button" class="btn btn-s" data-act="addv" style="width:auto">'+L.add+'</button>' +
+        '<button type="button" class="btn btn-s" data-act="export-csv" style="width:auto">📥 '+L.exportExcel+'</button>' +
+        '<label class="btn btn-s" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="csvFileIn" accept=".csv" style="display:none" /></label>' +
+        '</div>' : '') + '</div>'+
       '<div class="grid g2" style="margin:12px 0">'+
         '<input id="qV" placeholder="'+L.searchV+'" value="'+esc(filters.q)+'" />'+
         '<input id="qC" placeholder="'+L.searchC+'" value="'+esc(filters.cq)+'" /></div>'+
       '<div class="row">'+
         chip("svc","all",L.all)+chip("svc","gps",L.gps)+chip("svc","odisha",L.odisha)+chip("svc","chhattisgarh",L.cg)+
         '<button type="button" class="chip '+(filters.status==="red"?"on":"")+'" data-act="st-red">'+L.redOnly+'</button></div><div style="margin-top:12px">';
+    
     if (!out.length) html += '<p class="muted">'+L.vehicles+': 0</p>';
     for (i=0;i<out.length;i++) {
       var vv = out[i], bd="";
@@ -576,71 +586,188 @@ input, select {
       for (var d=0;d<DB.vehicles.length;d++) if (DB.vehicles[d].id!==id) keep.push(DB.vehicles[d]);
       DB.vehicles = keep; persist(); flash(L.deleted,"ok"); return render();
     }
+    if (act==="cancelv") { editing=null; return render(); }
     if (act==="savev") {
       var admin = me();
       var raw = {
-        customerName: val("fName"), vehicleNumber: val("fVeh"), gpsImei: val("fImei"),
-        customerPhone: val("fPhone"), gpsInstallDate: val("fInst"), gpsValidityYears: val("fYears"),
-        odishaPermitNo: val("fOdNo"), odishaExpiryDate: val("fOdExp"),
-        cgPermitNo: val("fCgNo"), cgExpiryDate: val("fCgExp")
+        customerName: val("fName"),
+        vehicleNumber: val("fVeh"),
+        gpsImei: val("fImei"),
+        customerPhone: val("fPhone"),
+        gpsInstallDate: val("fInst"),
+        gpsValidityYears: val("fYears"),
+        odishaPermitNo: val("fOdNo"),
+        odishaExpiryDate: val("fOdExp"),
+        cgPermitNo: val("fCgNo"),
+        cgExpiryDate: val("fCgExp")
       };
       try {
         upsert(admin.id, raw, editing && editing.id ? editing.id : null);
-        editing = null; flash(L.saved,"ok"); return render();
+        editing = null; flash(L.saved,"ok"); render();
       } catch (err) {
         flash(err.message); render();
-        var box2 = document.getElementById("editor");
-        if (box2) box2.innerHTML = formHtml(editing && editing.id ? editing : null);
-        return;
+        var ed = document.getElementById("editor");
+        if (ed && editing) ed.innerHTML = formHtml(editing);
       }
+      return;
     }
-    if (act==="cancelv") { editing = null; return render(); }
-    if (act==="make-cust") {
+    if (act==="export-csv") {
       var admin = me();
+      var vs = myVehicles();
+      if (!vs.length) { flash("कोई गाड़ी नहीं है एक्सपोर्ट करने के लिए"); return render(); }
+      
+      var headers = ["customerName", "vehicleNumber", "gpsImei", "customerPhone", "gpsInstallDate", "gpsValidityYears", "odishaPermitNo", "odishaExpiryDate", "cgPermitNo", "cgExpiryDate"];
+      var csvRows = [headers.join(",")];
+      
+      for (var i=0; i<vs.length; i++) {
+        var v = vs[i];
+        var row = [
+          '"' + (v.customerName || "").replace(/"/g, '""') + '"',
+          '"' + (v.vehicleNumber || "").replace(/"/g, '""') + '"',
+          '"' + (v.gpsImei || "").replace(/"/g, '""') + '"',
+          '"' + (v.customerPhone || "").replace(/"/g, '""') + '"',
+          '"' + (v.gpsInstallDate || "").replace(/"/g, '""') + '"',
+          v.gpsValidityYears || 1,
+          '"' + (v.odishaPermitNo || "").replace(/"/g, '""') + '"',
+          '"' + (v.odishaExpiryDate || "").replace(/"/g, '""') + '"',
+          '"' + (v.cgPermitNo || "").replace(/"/g, '""') + '"',
+          '"' + (v.cgExpiryDate || "").replace(/"/g, '""') + '"'
+        ];
+        csvRows.push(row.join(","));
+      }
+      
+      var blob = new Blob([csvRows.join("\n")], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = "VaahanDesk_Vehicles_" + todayIso() + ".csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      flash("Excel (CSV) फाइल डाउनलोड हो गई", "ok");
+      return render();
+    }
+    if (act==="make-cust") {
+      var u = me();
       var name = (val("cName")||"").trim();
       var phone = phone10(val("cPhone"));
-      var pass = (val("cPass")||"").trim();
-      if (!name || phone.length!==10 || !pass) { flash(L.required); return render(); }
-      for (var c=0;c<DB.users.length;c++) {
-        if (DB.users[c].ownerId===admin.id && DB.users[c].phone===phone) { flash(L.dupP); return render(); }
-      }
-      DB.users.push({ id:uid(), role:"customer", ownerId:admin.id, name:name, phone:phone, password:pass, email:null });
-      persist(); flash(L.created,"ok"); return render();
+      var pass = val("cPass");
+      if (!name || !phone || !pass) { flash(L.required); return render(); }
+      if (phone.length !== 10) { flash(L.badPhone); return render(); }
+      var existing = findUser(function(x){ return x.role==="customer" && x.ownerId===u.id && x.phone===phone; });
+      if (existing) { flash(L.dupP); return render(); }
+      var cust = { id: uid(), role:"customer", name:name, email:null, password:pass, phone:phone, ownerId:u.id };
+      DB.users.push(cust);
+      persist();
+      flash(L.created,"ok");
+      return render();
     }
     if (act==="delc") {
       if (!confirm(L.del+"?")) return;
       var cid = el.getAttribute("data-id");
-      var keepU=[];
-      for (var u=0;u<DB.users.length;u++) if (DB.users[u].id!==cid) keepU.push(DB.users[u]);
-      DB.users = keepU; persist(); flash(L.deleted,"ok"); return render();
+      var keepUsers = [];
+      for (var i=0; i<DB.users.length; i++) if (DB.users[i].id !== cid) keepUsers.push(DB.users[i]);
+      DB.users = keepUsers;
+      persist();
+      flash(L.deleted,"ok");
+      return render();
     }
     if (act==="lang-hi") { DB.lang="hi"; persist(); return render(); }
     if (act==="lang-en") { DB.lang="en"; persist(); return render(); }
     if (act==="day") {
-      var dayVal = Number(el.getAttribute("data-id"));
-      var idx = (DB.alertDays||[]).indexOf(dayVal);
-      if (idx>=0) DB.alertDays.splice(idx,1); else DB.alertDays.push(dayVal);
-      DB.alertDays.sort(function(a,b){return b-a;});
-      persist(); return render();
+      var d = Number(el.getAttribute("data-id"));
+      var arr = DB.alertDays || [];
+      var idx = arr.indexOf(d);
+      if (idx >= 0) arr.splice(idx,1); else arr.push(d);
+      DB.alertDays = arr.sort(function(a,b){return b-a;});
+      persist();
+      return render();
     }
-    if (act==="out") { DB.session=null; persist(); page="dash"; return render(); }
+    if (act==="out") { DB.session = null; persist(); page="dash"; flash(""); return render(); }
   }
 
   document.addEventListener("click", function(e) {
-    var t = e.target.closest("[data-act]");
-    if (t) onAct(t.getAttribute("data-act"), t);
+    var t = e.target;
+    while (t && t !== document) {
+      var act = t.getAttribute("data-act");
+      if (act) {
+        onAct(act, t);
+        break;
+      }
+      t = t.parentElement;
+    }
   });
+
   document.addEventListener("input", function(e) {
     if (e.target.id === "qV") { filters.q = e.target.value; }
     if (e.target.id === "qC") { filters.cq = e.target.value; }
     if (e.target.id === "fInst" || e.target.id === "fYears") {
-      var dt = val("fInst"), yrs = Number(val("fYears"))||1;
+      var inst = val("fInst"), yrs = Number(val("fYears"))||0;
       var expEl = document.getElementById("fGpsExp");
-      if (expEl) expEl.value = addYears(dt, yrs);
+      if (expEl) expEl.value = (inst && yrs) ? addYears(inst, yrs) : "";
+    }
+  });
+
+  document.addEventListener("change", function(e) {
+    if (e.target.id === "csvFileIn") {
+      var file = e.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          var text = evt.target.result;
+          var lines = text.split(/\r\n|\n/);
+          if (lines.length < 2) throw new Error();
+          
+          var headers = lines[0].split(',').map(function(h){ return h.replace(/(^"|"$)/g, '').trim(); });
+          var count = 0;
+          var admin = me();
+          
+          for (var i = 1; i < lines.length; i++) {
+            var line = lines[i].trim();
+            if (!line) continue;
+            
+            var row = [];
+            var inQuotes = false, valStr = '';
+            for (var c = 0; c < line.length; c++) {
+              var char = line[c];
+              if (char === '"') {
+                if (inQuotes && line[c+1] === '"') { valStr += '"'; c++; }
+                else { inQuotes = !inQuotes; }
+              } else if (char === ',' && !inQuotes) {
+                row.push(valStr.trim());
+                valStr = '';
+              } else {
+                valStr += char;
+              }
+            }
+            row.push(valStr.trim());
+            
+            var obj = {};
+            for (var h = 0; h < headers.length; h++) {
+              obj[headers[h]] = (row[h] || '').replace(/(^"|"$)/g, '');
+            }
+            
+            if (obj.vehicleNumber && obj.customerName) {
+              try {
+                upsert(admin.id, obj);
+                count++;
+              } catch(er) {}
+            }
+          }
+          flash(count + " गाड़ियाँ सफलतापूर्वक इम्पोर्ट हो गईं!", "ok");
+          render();
+        } catch (err) {
+          flash("इम्पोर्ट फेल: कृपया सही CSV फॉर्मेट इस्तेमाल करें");
+          render();
+        }
+      };
+      reader.readAsText(file);
     }
   });
 
   render();
+
 })();
 </script>
 </body>
