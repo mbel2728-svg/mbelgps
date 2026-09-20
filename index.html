@@ -55,7 +55,7 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
 
 <script>
 (function () {
-  var KEY = "vaahandesk.v5";
+  var KEY = "vaahandesk.v6";
   var page = "dash";
   var loginTab = "admin"; // 'admin' or 'customer'
   var editing = null;
@@ -84,15 +84,15 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
       yellow: "अलर्ट (पीला)", expired: "समाप्त", attention: "तत्काल ध्यान दें",
       allClear: "सभी गाड़ियाँ सुरक्षित हैं!", add: "नई गाड़ी जोड़ें", sample: "डेमो डम्पर लोड करें",
       searchV: "गाड़ी नंबर या ग्राहक खोजें…", all: "सभी", gps: "GPS", odisha: "ओडिशा", cg: "छत्तीसगढ़",
-      customerName: "ग्राहक का नाम", vehicleNumber: " गाड़ी नंबर", imei: "GPS IMEI (15 अंक)",
+      customerName: "ग्राहक का नाम", vehicleNumber: "गाड़ी नंबर", imei: "GPS IMEI (15 अंक)",
       install: "GPS इंस्टॉल तिथि", validity: "वैधता (साल)", gpsExp: "GPS समाप्ति",
       odPermit: "ओडिशा परमिट नं.", odExp: "ओडिशा समाप्ति", cgPermit: "छत्तीसगढ़ परमिट नं.",
-      cgExp: "छत्तीसगढ़ समाप्ति", custPhone: "व्हाट्सएप मोबाइल नंबर", save: "सुरक्षित करें",
+      cgExp: "छत्तीसगढ़ समाप्ति", custPhone: "मोबाइल नंबर (SMS के लिए)", save: "सुरक्षित करें",
       cancel: "रद्द करें", del: "हटाएँ", edit: "संपादित करें", wa: "व्हाट्सएप भेजें",
       today: "आज समाप्त", none: "लागू नहीं", lang: "भाषा बदलें", saved: "सफलतापूर्वक सेव हो गया!",
       deleted: "हटा दिया गया", required: "कृपया सभी आवश्यक जानकारी भरें",
-      mobileNum: "मोबाइल नंबर", sendOtp: "WhatsApp पर OTP भेजें", enterOtp: "4-अंकों का OTP दर्ज करें", verifyLogin: "OTP सत्यापित करके लॉगिन करें",
-      otpSent: "WhatsApp के लिए OTP तैयार है! नीचे दिए गए लिंक से भेजें:"
+      mobileNum: "मोबाइल नंबर", sendOtp: "Text SMS पर OTP भेजें", enterOtp: "4-अंकों का OTP दर्ज करें", verifyLogin: "OTP सत्यापित करके लॉगिन करें",
+      otpSent: "SMS के लिए OTP तैयार है! नीचे दिए गए बटन से भेजें:"
     },
     en: {
       app: "VaahanDesk", tag: "GPS · Odisha · Chhattisgarh mining desk",
@@ -106,12 +106,12 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
       customerName: "Customer Name", vehicleNumber: "Vehicle Number", imei: "GPS IMEI (15 digits)",
       install: "GPS Install Date", validity: "Validity (Years)", gpsExp: "GPS Expiry",
       odPermit: "Odisha Permit No.", odExp: "Odisha Expiry", cgPermit: "Chhattisgarh Permit No.",
-      cgExp: "Chhattisgarh Expiry", custPhone: "WhatsApp Mobile", save: "Save",
+      cgExp: "Chhattisgarh Expiry", custPhone: "Mobile Number (For SMS)", save: "Save",
       cancel: "Cancel", del: "Delete", edit: "Edit", wa: "Send WhatsApp",
       today: "Expires Today", none: "Not Set", lang: "Language", saved: "Successfully saved!",
       deleted: "Deleted successfully", required: "Required fields are missing",
-      mobileNum: "Mobile Number", sendOtp: "Send OTP via WhatsApp", enterOtp: "Enter 4-digit OTP", verifyLogin: "Verify & Login",
-      otpSent: "OTP generated! Click below to send via WhatsApp:"
+      mobileNum: "Mobile Number", sendOtp: "Send OTP via Text SMS", enterOtp: "Enter 4-digit OTP", verifyLogin: "Verify & Login",
+      otpSent: "OTP generated! Click below to send via SMS:"
     }
   };
   function L() { return T[DB.lang] || T.hi; }
@@ -142,7 +142,6 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
       if (DB.role === "admin") {
         list.push(v);
       } else {
-        // Customer sees only vehicles matching their phone
         if (v.customerPhone === DB.session) list.push(v);
       }
     }
@@ -193,7 +192,6 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
       (msg ? '<div class="' + msgKind + '">' + msg + '</div>' : '') +
       '<button class="btn btn-p" data-act="demo" style="margin-bottom:14px;">' + t.demo + '</button>' +
       
-      // Tabs
       '<div style="display:flex; gap:6px; margin-bottom:14px;">' +
         '<button class="chip ' + (loginTab === 'admin' ? 'on' : '') + '" data-tab="admin" style="flex:1;">' + t.shopAdmin + '</button>' +
         '<button class="chip ' + (loginTab === 'customer' ? 'on' : '') + '" data-tab="customer" style="flex:1;">' + t.customerTrans + '</button>' +
@@ -212,7 +210,7 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
           '<h2>' + t.customerTrans + '</h2>' +
           '<div><label>' + t.mobileNum + '</label><input id="custMob" placeholder="9876543210" value="' + pendingPhone + '" /></div>' +
           (!generatedOtp ? 
-            '<button class="btn btn-p" data-act="send-otp">' + t.sendOtp + '</button>' :
+            '<button class="btn btn-p" data-act="send-sms-otp">' + t.sendOtp + '</button>' :
             '<div><label>' + t.enterOtp + '</label><input id="custOtpInput" placeholder="4-digit OTP" /></div>' +
             '<button class="btn btn-p" data-act="verify-otp">' + t.verifyLogin + '</button>'
           ) +
@@ -417,14 +415,15 @@ h2 { font-size: 18px; margin: 16px 0 10px; }
       render();
     }
 
-    if (act === "send-otp") {
+    if (act === "send-sms-otp") {
       var phone = document.getElementById("custMob").value.trim();
       if (!phone || phone.length < 10) { flash(L().required, "err"); render(); return; }
       pendingPhone = phone;
       generatedOtp = Math.floor(1000 + Math.random() * 9000).toString();
       
-      var waUrl = "https://wa.me/91" + phone + "?text=" + encodeURIComponent("आपका VaahanDesk लॉगिन OTP है: " + generatedOtp);
-      window.open(waUrl, "_blank");
+      // Opens phone default SMS messenger app with prefilled text
+      var smsBody = encodeURIComponent("Aapka VaahanDesk Login OTP hai: " + generatedOtp);
+      window.location.href = "sms:" + phone + "?body=" + smsBody;
       
       flash(L().otpSent + " OTP: " + generatedOtp, "ok");
       render();
