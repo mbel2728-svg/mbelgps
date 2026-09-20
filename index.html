@@ -4,16 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MBELGPS - गाड़ियाँ</title>
-    <!-- SheetJS Library Excel export ke liye -->
+    <!-- SheetJS Library Excel Export ke liye -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background-color: #121212; color: #fff; margin: 0; padding: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
         h1 { margin: 0; font-size: 24px; }
-        .btn-export { background-color: #2e7d32; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: bold; }
+        .btn-export {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+        }
         .btn-export:hover { background-color: #388e3c; }
-        table { width: 100%; border-collapse: collapse; background-color: #1e1e1e; margin-top: 15px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #333; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1e1e1e;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
         th { background-color: #252525; }
     </style>
 </head>
@@ -21,12 +50,11 @@
 
     <div class="header">
         <h1>गाड़ियाँ</h1>
-        <!-- Excel Export Button -->
+        <!-- Export Button -->
         <button class="btn-export" onclick="exportToExcel()">📥 गाड़ियाँ एक्सपोर्ट करें (Excel)</button>
     </div>
 
-    <!-- Data Table -->
-    <table id="vehicleTable">
+    <table>
         <thead>
             <tr>
                 <th>गाड़ी नंबर</th>
@@ -37,7 +65,7 @@
                 <th>छत्तीसगढ़ स्थिति</th>
             </tr>
         </thead>
-        <tbody id="tableBody">
+        <tbody id="vehicleTableBody">
             <tr>
                 <td>OD05AB4521</td>
                 <td>राम ट्रांसपोर्ट</td>
@@ -46,11 +74,19 @@
                 <td>5 दिन शेष</td>
                 <td>48 दिन शेष</td>
             </tr>
+            <tr>
+                <td>CG04CD8890</td>
+                <td>शुभम माइनिंग</td>
+                <td>9876500102</td>
+                <td>30 दिन शेष</td>
+                <td>सेट नहीं</td>
+                <td>3 दिन हो चुके</td>
+            </tr>
         </tbody>
     </table>
 
     <script>
-        // Sample data array jo export hoga
+        // Data Array jise Excel me export karna hai
         const vehiclesList = [
             {
                 "गाड़ी नंबर": "OD05AB4521",
@@ -59,12 +95,20 @@
                 "GPS स्थिति": "25 दिन शेष",
                 "ओडिशा स्थिति": "5 दिन शेष",
                 "छत्तीसगढ़ स्थिति": "48 दिन शेष"
+            },
+            {
+                "गाड़ी नंबर": "CG04CD8890",
+                "ग्राहक का नाम": "शुभम माइनिंग",
+                "मोबाइल नंबर": "9876500102",
+                "GPS स्थिति": "30 दिन शेष",
+                "ओडिशा स्थिति": "सेट नहीं",
+                "छत्तीसगढ़ स्थिति": "3 दिन हो चुके"
             }
         ];
 
         // Excel Export Function
         function exportToExcel() {
-            if (!vehiclesList || vehiclesList.length === 0) {
+            if (typeof vehiclesList === 'undefined' || vehiclesList.length === 0) {
                 alert("Export karne ke liye koi data available nahi hai!");
                 return;
             }
