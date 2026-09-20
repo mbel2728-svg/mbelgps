@@ -239,7 +239,7 @@ input, select {
     if (imei && imei.length !== 15) throw new Error(L.badImei);
     var phone = String(raw.customerPhone||"").trim() ? phone10(raw.customerPhone) : "";
     if (String(raw.customerPhone||"").trim() && !phone) throw new Error(L.badPhone);
-    var years = Number(raw.gpsValidityYears)||0;
+    var years = Number(raw.gpsValidityYears)||1;
     var install = String(raw.gpsInstallDate||"").trim();
     var gpsExpiry = install && years ? addYears(install, years) : "";
     var cust = null;
@@ -300,21 +300,21 @@ input, select {
         var workbook = XLSX.read(data, {type: 'array'});
         var firstSheetName = workbook.SheetNames[0];
         var worksheet = workbook.Sheets[firstSheetName];
-        var json = XLSX.utils.sheet_to_json(worksheet);
+        var json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
         var admin = me();
         if (!admin || admin.role !== "admin") return;
         var count = 0;
         for (var i = 0; i < json.length; i++) {
           var row = json[i];
           var raw = {
-            customerName: row["CUSTOMER NAME"] || row["customerName"] || "",
-            customerPhone: row["MOBILE NUMBER"] || row["customerPhone"] || "",
-            vehicleNumber: row["VEHICLE NUMBER"] || row["vehicleNumber"] || "",
+            customerName: row["CUSTOMER NAME"] || row["customerName"] || row["ग्राहक का नाम"] || "",
+            customerPhone: row["MOBILE NUMBER"] || row["customerPhone"] || row["मोबाइल नंबर"] || "",
+            vehicleNumber: row["VEHICLE NUMBER"] || row["vehicleNumber"] || row["गाड़ी नंबर"] || "",
             gpsImei: row["GPS IMEI"] || row["gpsImei"] || "",
-            gpsInstallDate: row["GPS INSTALLATION DATE"] || row["gpsInstallDate"] || "",
-            gpsValidityYears: 1,
-            odishaExpiryDate: row["OD MINING EXPIRY DATE"] || row["odishaExpiryDate"] || "",
-            cgExpiryDate: row["CG MINING EXPIRY DATE"] || row["cgExpiryDate"] || ""
+            gpsInstallDate: row["GPS INSTALLATION DATE"] || row["gpsInstallDate"] || row["GPS इंस्टॉल तिथि"] || "",
+            gpsValidityYears: row["GPS Validity (Years)"] || row["gpsValidityYears"] || row["GPS वैधता (वर्ष)"] || 1,
+            odishaExpiryDate: row["OD MINING EXPIRY DATE"] || row["odishaExpiryDate"] || row["ओडिशा समाप्ति तिथि"] || "",
+            cgExpiryDate: row["CG MINING EXPIRY DATE"] || row["cgExpiryDate"] || row["छत्तीसगढ़ समाप्ति तिथि"] || ""
           };
           try {
             upsert(admin.id, raw);
