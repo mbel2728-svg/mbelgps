@@ -66,6 +66,7 @@ input, select {
   var mem = null;
   var page = "dash";
   var editing = null;
+  var resettingCustId = null;
   var filters = { q: "", cq: "", svc: "all", status: "all" };
   var msg = "";
   var msgKind = "err";
@@ -111,7 +112,8 @@ input, select {
     dupV:"This vehicle number already exists.", dupP:"This mobile number already exists.", saved:"Successfully saved.",
     created:"Successfully created.", deleted:"Successfully deleted.", viewOnly:"View only.",
     exportExcel:"Export Vehicles (Excel)",
-    importExcel:"Import Vehicles (Excel)"
+    importExcel:"Import Vehicles (Excel)",
+    resetPass:"Reset Password", updatePass:"Update Password"
   };
 
   function T() { return TXT; }
@@ -549,6 +551,7 @@ input, select {
       '<div><label>'+L.phone+'</label><input id="cPhone" inputmode="numeric" /></div>'+
       '<div><label>'+L.password+'</label><input id="cPass" /></div></div>'+
       '<button type="button" class="btn btn-p" data-act="make-cust">'+L.createLogin+'</button></div>';
+    
     for (var i=0;i<DB.users.length;i++) {
       var c = DB.users[i];
       if (c.role!=="customer" || c.ownerId!==u.id) continue;
@@ -559,8 +562,20 @@ input, select {
       }
       var text = "VaahanDesk login details:\nMobile: " + c.phone + "\nPassword: " + c.password;
       var href = waHref(c.phone, text);
-      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · Pass: <b>'+esc(c.password)+'</b> · '+n+' '+L.vehicles+
-        '<div class="btn-row" style="margin-top:8px">'+(href?'<a class="btn btn-wa" href="'+href+'">'+L.share+'</a>':'')+
+      
+      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · Pass: <b>'+esc(c.password)+'</b> · '+n+' '+L.vehicles;
+      
+      if (resettingCustId === c.id) {
+        html += '<div class="grid" style="margin-top:10px; background:var(--soft); padding:10px; border-radius:8px;">'+
+          '<div><label>New Password</label><input id="newCustPass" value="" placeholder="Enter new password" /></div>'+
+          '<div class="btn-row" style="margin-top:6px">'+
+          '<button type="button" class="btn btn-p" data-act="save-pass" data-id="'+c.id+'">'+L.updatePass+'</button>'+
+          '<button type="button" class="btn btn-s" data-act="cancel-pass">'+L.cancel+'</button></div></div>';
+      }
+
+      html += '<div class="btn-row" style="margin-top:8px">'+
+        (href?'<a class="btn btn-wa" href="'+href+'">'+L.share+'</a>':'')+
+        '<button type="button" class="btn btn-s" data-act="prompt-reset" data-id="'+c.id+'" style="width:auto">🔑 '+L.resetPass+'</button>'+
         '<button type="button" class="btn btn-d" data-act="delc" data-id="'+c.id+'">'+L.del+'</button></div></div>';
     }
     return html;
@@ -650,7 +665,7 @@ input, select {
       if (!c) { flash(L.badCust); return render(); }
       DB.session=c.id; persist(); page="dash"; return render();
     }
-    if (act==="go") { page = el.getAttribute("data-id"); editing=null; return render(); }
+    if (act==="go") { page = el.getAttribute("data-id"); editing=null; resettingCustId=null; return render(); }
     if (act==="sample") {
       var admin = me(); var s=samples();
       for (var i=0;i<s.length;i++) { try { upsert(admin.id, s[i]); } catch(e) {} }
@@ -704,6 +719,31 @@ input, select {
       persist(); flash(L.created, "ok"); render();
       return;
     }
+    if (act==="prompt-reset") {
+      resettingCustId = el.getAttribute("data-id");
+      render();
+      return;
+    }
+    if (act==="cancel-pass") {
+      resettingCustId = null;
+      render();
+      return;
+    }
+    if (act==="save-pass") {
+      var cid = el.getAttribute("data-id");
+      var newPass = (val("newCustPass")||"").trim();
+      if (!newPass) { flash("Please enter new password"); return render(); }
+      for (var i=0; i<DB.users.length; i++) {
+        if (DB.users[i].id === cid) {
+          DB.users[i].password = newPass;
+        }
+      }
+      persist();
+      resettingCustId = null;
+      flash("Password updated successfully!", "ok");
+      render();
+      return;
+    }
     if (act==="delc") {
       var cid = el.getAttribute("data-id");
       DB.users = DB.users.filter(function(x){ return x.id!==cid; });
@@ -716,12 +756,12 @@ input, select {
       if (idx>=0) DB.alertDays.splice(idx,1); else DB.alertDays.push(d);
       persist(); render(); return;
     }
-    if (act==="out") { DB.session=null; persist(); page="dash"; editing=null; render(); return; }
+    if (act==="out") { DB.session=null; persist(); page="dash"; editing=null; resettingCustId=null; render(); return; }
   }
 
   document.addEventListener("click", function(e) {
     var t = e.target;
-  while (t && t !== document) {
+    while (t && t !== document) {
       var act = t.getAttribute("data-act");
       if (act) {
         onAct(act, t);
