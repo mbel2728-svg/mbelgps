@@ -80,7 +80,7 @@ if (act==="st-red") {
     if (act==="out") { DB.session = null; persist(); page = "dash"; return render(); }
     if (act==="export-csv") {
       var vs = myVehicles();
-     var csv = "CUSTOMER,VEHICLE,IMEI,INSTALL DATE,VALIDITY YEARS,ODISHA PERMIT,ODISHA EXPIRY,CG PERMIT,CG EXPIRY,PHONE\n";
+      var csv = "Customer,Vehicle,IMEI,InstallDate,ValidityYears,OdishaPermit,OdishaExpiry,CgPermit,CgExpiry,Phone\n";
       for (var i=0; i<vs.length; i++) {
         var v = vs[i];
         csv += [v.customerName, v.vehicleNumber, v.gpsImei, v.gpsInstallDate, v.gpsValidityYears, v.odishaPermitNo, v.odishaExpiryDate, v.cgPermitNo, v.cgExpiryDate, v.customerPhone].join(",") + "\n";
