@@ -148,7 +148,6 @@ input, select {
   }
   function digits(s) { return String(s||"").replace(/\D/g,""); }
   
-  // Helper to parse dates flexibly (handles DD/MM/YYYY, Excel serial numbers, YYYY-MM-DD)
   function parseDate(val) {
     if (!val) return "";
     val = String(val).trim();
@@ -162,7 +161,6 @@ input, select {
         return y + "-" + m + "-" + d;
       }
     }
-    // Handle Excel serial date number
     if (!isNaN(val) && Number(val) > 30000) {
       var utc_days = Math.floor(Number(val) - 25569);
       var utc_value = utc_days * 86400;
@@ -172,7 +170,6 @@ input, select {
     return val;
   }
 
-  // Helper to fix scientific notation IMEI (e.g. 8.63725E+14)
   function parseImei(val) {
     if (!val) return "";
     var s = String(val).trim();
@@ -277,7 +274,6 @@ input, select {
     
     var imei = parseImei(raw.gpsImei);
     if (imei && imei.length !== 15) {
-      // If IMEI is close to 15 digits or slightly off during import, let it pass or pad/truncate gently instead of throwing hard error, or keep standard check:
       if (imei.length < 15) imei = imei.padEnd(15, '0');
       else if (imei.length > 15) imei = imei.slice(0, 15);
     }
@@ -285,13 +281,10 @@ input, select {
     var phone = String(raw.customerPhone||"").trim() ? phone10(raw.customerPhone) : "";
     var years = Number(raw.gpsValidityYears)||1;
     var install = parseDate(raw.gpsInstallDate);
-    
-    // Fallback if installation date is empty but GPS expiry is given
     var gpsExpiry = parseDate(raw.gpsExpiryDate);
     if (!gpsExpiry && install && years) {
       gpsExpiry = addYears(install, years);
     } else if (!install && gpsExpiry && years) {
-      // If installation date is missing, estimate it backwards from expiry
       var p = gpsExpiry.split("-").map(Number);
       if (p.length === 3) {
         var dt = new Date(Date.UTC(p[0], p[1]-1, p[2]));
@@ -564,9 +557,9 @@ input, select {
         var v=DB.vehicles[j];
         if (v.ownerId===u.id && (v.customerUserId===c.id || v.customerPhone===c.phone)) n++;
       }
-      var text = "VaahanDesk login details:\nMobile: " + c.phone + "\nPassword: (Provided by shop)";
+      var text = "VaahanDesk login details:\nMobile: " + c.phone + "\nPassword: " + c.password;
       var href = waHref(c.phone, text);
-      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · '+n+' '+L.vehicles+
+      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · Pass: <b>'+esc(c.password)+'</b> · '+n+' '+L.vehicles+
         '<div class="btn-row" style="margin-top:8px">'+(href?'<a class="btn btn-wa" href="'+href+'">'+L.share+'</a>':'')+
         '<button type="button" class="btn btn-d" data-act="delc" data-id="'+c.id+'">'+L.del+'</button></div></div>';
     }
@@ -728,7 +721,7 @@ input, select {
 
   document.addEventListener("click", function(e) {
     var t = e.target;
-    while (t && t !== document) {
+  while (t && t !== document) {
       var act = t.getAttribute("data-act");
       if (act) {
         onAct(act, t);
