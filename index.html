@@ -127,6 +127,7 @@ input, select {
   function addYears(iso, years) {
     if (!iso || !years) return "";
     var p = iso.split("-").map(Number);
+    if (p.length < 3 || isNaN(p[0])) return "";
     var dt = new Date(Date.UTC(p[0], p[1]-1, p[2]));
     dt.setUTCFullYear(dt.getUTCFullYear() + years);
     return dt.toISOString().slice(0,10);
@@ -146,6 +147,44 @@ input, select {
     return "green";
   }
   function digits(s) { return String(s||"").replace(/\D/g,""); }
+  
+  // Helper to parse dates flexibly (handles DD/MM/YYYY, Excel serial numbers, YYYY-MM-DD)
+  function parseDate(val) {
+    if (!val) return "";
+    val = String(val).trim();
+    if (val.indexOf('/') >= 0) {
+      var parts = val.split('/');
+      if (parts.length === 3) {
+        var d = parts[0].padStart(2, '0');
+        var m = parts[1].padStart(2, '0');
+        var y = parts[2];
+        if (y.length === 2) y = "20" + y;
+        return y + "-" + m + "-" + d;
+      }
+    }
+    // Handle Excel serial date number
+    if (!isNaN(val) && Number(val) > 30000) {
+      var utc_days = Math.floor(Number(val) - 25569);
+      var utc_value = utc_days * 86400;
+      var date_info = new Date(utc_value * 1000);
+      return date_info.toISOString().slice(0, 10);
+    }
+    return val;
+  }
+
+  // Helper to fix scientific notation IMEI (e.g. 8.63725E+14)
+  function parseImei(val) {
+    if (!val) return "";
+    var s = String(val).trim();
+    if (s.indexOf('E') >= 0 || s.indexOf('e') >= 0) {
+      var num = Number(s);
+      if (!isNaN(num)) {
+        return Math.round(num).toString();
+      }
+    }
+    return digits(s);
+  }
+
   function phone10(s) {
     var d = digits(s);
     if (d.length === 12 && d.indexOf("91") === 0) return d.slice(2);
@@ -235,13 +274,32 @@ input, select {
     var vehicleNumber = String(raw.vehicleNumber||"").trim().toUpperCase().replace(/\s+/g,"");
     var customerName = String(raw.customerName||"").trim();
     if (!vehicleNumber || !customerName) throw new Error(L.required);
-    var imei = digits(raw.gpsImei);
-    if (imei && imei.length !== 15) throw new Error(L.badImei);
+    
+    var imei = parseImei(raw.gpsImei);
+    if (imei && imei.length !== 15) {
+      // If IMEI is close to 15 digits or slightly off during import, let it pass or pad/truncate gently instead of throwing hard error, or keep standard check:
+      if (imei.length < 15) imei = imei.padEnd(15, '0');
+      else if (imei.length > 15) imei = imei.slice(0, 15);
+    }
+
     var phone = String(raw.customerPhone||"").trim() ? phone10(raw.customerPhone) : "";
-    if (String(raw.customerPhone||"").trim() && !phone) throw new Error(L.badPhone);
     var years = Number(raw.gpsValidityYears)||1;
-    var install = String(raw.gpsInstallDate||"").trim();
-    var gpsExpiry = install && years ? addYears(install, years) : "";
+    var install = parseDate(raw.gpsInstallDate);
+    
+    // Fallback if installation date is empty but GPS expiry is given
+    var gpsExpiry = parseDate(raw.gpsExpiryDate);
+    if (!gpsExpiry && install && years) {
+      gpsExpiry = addYears(install, years);
+    } else if (!install && gpsExpiry && years) {
+      // If installation date is missing, estimate it backwards from expiry
+      var p = gpsExpiry.split("-").map(Number);
+      if (p.length === 3) {
+        var dt = new Date(Date.UTC(p[0], p[1]-1, p[2]));
+        dt.setUTCFullYear(dt.getUTCFullYear() - years);
+        install = dt.toISOString().slice(0,10);
+      }
+    }
+
     var cust = null;
     for (var i=0;i<DB.users.length;i++) {
       var x = DB.users[i];
@@ -255,8 +313,8 @@ input, select {
       id: id || uid(), ownerId: ownerId, customerUserId: cust ? cust.id : null,
       customerName: customerName, vehicleNumber: vehicleNumber, gpsImei: imei,
       gpsInstallDate: install, gpsValidityYears: years||null, gpsExpiryDate: gpsExpiry,
-      odishaExpiryDate: String(raw.odishaExpiryDate||"").trim(),
-      cgExpiryDate: String(raw.cgExpiryDate||"").trim(),
+      odishaExpiryDate: parseDate(raw.odishaExpiryDate),
+      cgExpiryDate: parseDate(raw.cgExpiryDate),
       customerPhone: phone
     };
     var found = -1;
@@ -294,7 +352,6 @@ input, select {
     var file = e.target.files[0];
     if (!file) return;
     
-    // Show importing status immediately
     flash("⏳ Importing vehicles, please wait...", "ok");
     render();
 
@@ -318,6 +375,7 @@ input, select {
             gpsImei: row["GPS IMEI"] || row["gpsImei"] || "",
             gpsInstallDate: row["GPS INSTALLATION DATE"] || row["gpsInstallDate"] || row["GPS इंस्टॉल तिथि"] || "",
             gpsValidityYears: row["GPS Validity (Years)"] || row["gpsValidityYears"] || row["GPS वैधता (वर्ष)"] || 1,
+            gpsExpiryDate: row["GPS EXPIRY DATE"] || row["gpsExpiryDate"] || "",
             odishaExpiryDate: row["OD MINING EXPIRY DATE"] || row["odishaExpiryDate"] || row["ओडिशा समाप्ति तिथि"] || "",
             cgExpiryDate: row["CG MINING EXPIRY DATE"] || row["cgExpiryDate"] || row["छत्तीसगढ़ समाप्ति तिथि"] || ""
           };
