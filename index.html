@@ -293,6 +293,11 @@ input, select {
   function importFromExcel(e) {
     var file = e.target.files[0];
     if (!file) return;
+    
+    // Show importing status immediately
+    flash("⏳ Importing vehicles, please wait...", "ok");
+    render();
+
     var reader = new FileReader();
     reader.onload = function(evt) {
       try {
@@ -321,10 +326,10 @@ input, select {
             count++;
           } catch(err) {}
         }
-        flash(count + " vehicles imported successfully!", "ok");
+        flash("✅ " + count + " vehicles imported successfully!", "ok");
         render();
       } catch (err) {
-        flash("Error reading Excel file!");
+        flash("❌ Error reading Excel file! Please check headers.");
         render();
       }
     };
@@ -438,7 +443,7 @@ input, select {
       (u.role==="admin" ? '<div class="row" style="gap:6px">' +
         '<button type="button" class="btn btn-s" data-act="addv" style="width:auto">'+L.add+'</button>' +
         '<button type="button" class="btn btn-s" data-act="export-excel" style="width:auto">📥 '+L.exportExcel+'</button>' +
-        '<label class="btn btn-s" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="excelFileIn" accept=".xlsx, .xls, .csv" style="display:none" /></label>' +
+        '<label class="btn btn-p" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="excelFileIn" accept=".xlsx, .xls, .csv" style="display:none" /></label>' +
         '</div>' : '') + '</div>'+
       '<div class="grid g2" style="margin:12px 0">'+
         '<input id="qV" placeholder="'+L.searchV+'" value="'+esc(filters.q)+'" />'+
