@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <meta name="theme-color" content="#0c0d0b" />
 <title>VaahanDesk</title>
+<!-- SheetJS Library for Excel Export/Import -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root {
   --bg:#0c0d0b; --fg:#eceae4; --card:#151613; --muted:#9a978c;
@@ -57,19 +59,19 @@ input, select {
 </style>
 </head>
 <body>
-<div id="app" class="wrap">लोड हो रहा है…</div>
+<div id="app" class="wrap">Loading…</div>
 <script>
 (function () {
-  var KEY = "vaahandesk.v3";
+  var KEY = "vaahandesk.v4";
   var mem = null;
   var page = "dash";
-  var loginTab = "shop";
   var editing = null;
+  var resettingCustId = null;
   var filters = { q: "", cq: "", svc: "all", status: "all" };
   var msg = "";
   var msgKind = "err";
 
-  function empty() { return { users: [], vehicles: [], session: null, lang: "hi", alertDays: [30, 15, 7, 0] }; }
+  function empty() { return { users: [], vehicles: [], session: null, alertDays: [30, 15, 7, 0] }; }
   function load() {
     if (mem) return mem;
     try {
@@ -83,61 +85,38 @@ input, select {
   }
   var DB = load();
 
-  var HI = {
-    app:"VaahanDesk", tag:"GPS · ओडिशा · छत्तीसगढ़ माइनिंग डेस्क",
-    shop:"दुकान / एडमिन", customer:"ग्राहक / ट्रांसपोर्टर",
-    email:"ईमेल", password:"पासवर्ड", shopName:"दुकान का नाम",
-    signIn:"लॉगिन", createShop:"नई दुकान बनाएँ", phone:"मोबाइल नंबर",
-    demo:"डेमो खोलें (एक टैप)",
-    customerHint:"दुकान वाले से मोबाइल + पासवर्ड लें।",
-    dash:"डैशबोर्ड", vehicles:"गाड़ियाँ", customers:"ग्राहक", settings:"सेटिंग्स",
-    out:"लॉग आउट", total:"कुल गाड़ियाँ", red:"लाल अलर्ट", yellow:"पीले अलर्ट", expired:"समाप्त",
-    attention:"ध्यान दें", allClear:"कोई अलर्ट नहीं।",
-    add:"नई गाड़ी", sample:"डेमो गाड़ियाँ जोड़ें", searchV:"गाड़ी नंबर…", searchC:"ग्राहक का नाम…",
-    all:"सभी", gps:"GPS", odisha:"ओडिशा", cg:"छत्तीसगढ़", redOnly:"केवल लाल अलर्ट",
-    customerName:"ग्राहक का नाम", vehicleNumber:"गाड़ी नंबर", imei:"GPS IMEI (15 अंक)",
-    install:"GPS इंस्टॉल तिथि", validity:"GPS वैधता",
-    gpsExp:"GPS समाप्ति", odPermit:"ओडिशा परमिट नं.", odExp:"ओडिशा समाप्ति",
-    cgPermit:"छत्तीसगढ़ परमिट नं.", cgExp:"छत्तीसगढ़ समाप्ति",
-    custPhone:"ग्राहक मोबाइल (WhatsApp)", save:"सेव करें", cancel:"रद्द", del:"हटाएँ", edit:"संपादित",
-    wa:"WhatsApp रिमाइंडर", today:"आज समाप्त", none:"सेट नहीं",
-    createLogin:"लॉगिन बनाएँ", custHelp:"ग्राहक मोबाइल से लॉगिन करेगा। पासवर्ड आप दें।",
-    lang:"भाषा", shopRole:"दुकान एडमिन", custRole:"ग्राहक",
-    alert:"अलर्ट कब दिखाएँ", greet:"नमस्ते", share:"लॉगिन WhatsApp पर भेजें",
-    needShop:"पहले दुकान बनाएँ, या डेमो खोलें।", badLogin:"ईमेल/पासवर्ड गलत। नया पासवर्ड लिखकर फिर Sign In दबाएँ।",
-    badCust:"यह ग्राहक लॉगिन नहीं मिला। पहले दुकान वाले से ग्राहक आईडी बनवाएँ, फिर «ग्राहक» टैब पर मोबाइल+पासवर्ड डालें।", pwMin:"पासवर्ड कम से कम 6 अक्षर",
-    required:"नाम और गाड़ी नंबर ज़रूरी", badImei:"IMEI 15 अंक का हो", badPhone:"10 अंक का मोबाइल",
-    dupV:"यह गाड़ी नंबर पहले से है", dupP:"यह मोबाइल पहले से है", saved:"सेव हो गया",
-    created:"बन गया", deleted:"हट गया", viewOnly:"केवल देखने के लिए।"
-  };
-  var EN = {
-    app:"VaahanDesk", tag:"GPS · Odisha · Chhattisgarh mining desk",
+  var TXT = {
+    app:"VaahanDesk", tag:"GPS · Odisha · Chhattisgarh Mining Desk",
     shop:"Shop / Admin", customer:"Customer / Transporter",
-    email:"Email", password:"Password", shopName:"Shop name",
-    signIn:"Sign in", createShop:"Create shop", phone:"Mobile number",
-    demo:"Open demo (one tap)",
-    customerHint:"Ask the shop for mobile + password.",
+    email:"Email", password:"Password", shopName:"Shop Name",
+    signIn:"Sign In", createShop:"Create Shop", phone:"Mobile Number",
+    demo:"Open Demo (One Tap)",
+    customerHint:"Get mobile + password from the shop.",
     dash:"Dashboard", vehicles:"Vehicles", customers:"Customers", settings:"Settings",
-    out:"Sign out", total:"Total dumpers", red:"Red alerts", yellow:"Yellow alerts", expired:"Expired",
-    attention:"Needs attention", allClear:"No alerts.",
-    add:"Add vehicle", sample:"Load sample dumpers", searchV:"Vehicle number…", searchC:"Customer name…",
-    all:"All", gps:"GPS", odisha:"Odisha", cg:"Chhattisgarh", redOnly:"Red alerts only",
-    customerName:"Customer name", vehicleNumber:"Vehicle number", imei:"GPS IMEI (15 digits)",
-    install:"GPS install date", validity:"GPS validity",
-    gpsExp:"GPS expiry", odPermit:"Odisha permit no.", odExp:"Odisha expiry",
-    cgPermit:"Chhattisgarh permit no.", cgExp:"Chhattisgarh expiry",
-    custPhone:"Customer mobile (WhatsApp)", save:"Save", cancel:"Cancel", del:"Delete", edit:"Edit",
-    wa:"WhatsApp reminder", today:"Expires today", none:"Not set",
-    createLogin:"Create login", custHelp:"Customer signs in with this mobile.",
-    lang:"Language", shopRole:"Shop admin", custRole:"Customer",
-    alert:"When to alert", greet:"Hello", share:"Send login on WhatsApp",
-    needShop:"Create a shop first, or open the demo.", badLogin:"Wrong email/password. Type a new password and Sign In again to reset.",
-    badCust:"No customer login yet. The shop must create it first. Then use the Customer tab with mobile + password.", pwMin:"Password at least 6 characters",
-    required:"Name and vehicle number required", badImei:"IMEI must be 15 digits", badPhone:"10-digit mobile",
-    dupV:"Vehicle number already exists", dupP:"This mobile already exists", saved:"Saved",
-    created:"Created", deleted:"Deleted", viewOnly:"View only."
+    out:"Sign Out", total:"Total Vehicles", red:"Red Alerts", yellow:"Yellow Alerts", expired:"Expired",
+    attention:"Needs Attention", allClear:"No active alerts.",
+    add:"Add Vehicle", sample:"Load Sample Vehicles", searchV:"Search vehicle number…", searchC:"Search customer name…",
+    all:"All", gps:"GPS", odisha:"OD Mining", cg:"CG Mining", redOnly:"Red Alerts Only",
+    customerName:"CUSTOMER NAME", vehicleNumber:"VEHICLE NUMBER", imei:"GPS IMEI",
+    install:"GPS INSTALLATION DATE", validity:"GPS Validity (Years)",
+    gpsExp:"GPS EXPIRY DATE", odExp:"OD MINING EXPIRY DATE",
+    cgExp:"CG MINING EXPIRY DATE",
+    custPhone:"MOBILE NUMBER", save:"Save", cancel:"Cancel", del:"Delete", edit:"Edit",
+    wa:"WhatsApp Reminder", today:"Expires Today", none:"Not set",
+    createLogin:"Create Login", custHelp:"Customer logs in with mobile and password.",
+    shopRole:"Shop Admin", custRole:"Customer",
+    alert:"Alert Thresholds", greet:"Hello", share:"Send Login on WhatsApp",
+    needShop:"Create a shop first or open demo.", badLogin:"Incorrect email or password.",
+    badCust:"Incorrect mobile or password.", pwMin:"Password must be at least 6 characters.",
+    required:"Customer Name and Vehicle Number are required.", badImei:"IMEI must be 15 digits.", badPhone:"Enter a valid 10-digit mobile number.",
+    dupV:"This vehicle number already exists.", dupP:"This mobile number already exists.", saved:"Successfully saved.",
+    created:"Successfully created.", deleted:"Successfully deleted.", viewOnly:"View only.",
+    exportExcel:"Export Vehicles (Excel)",
+    importExcel:"Import Vehicles (Excel)",
+    resetPass:"Reset Password", updatePass:"Update Password"
   };
-  function T() { return DB.lang === "en" ? EN : HI; }
+
+  function T() { return TXT; }
   function flash(text, kind) { msg = text || ""; msgKind = kind || "err"; }
   function banner() {
     if (!msg) return "";
@@ -150,6 +129,7 @@ input, select {
   function addYears(iso, years) {
     if (!iso || !years) return "";
     var p = iso.split("-").map(Number);
+    if (p.length < 3 || isNaN(p[0])) return "";
     var dt = new Date(Date.UTC(p[0], p[1]-1, p[2]));
     dt.setUTCFullYear(dt.getUTCFullYear() + years);
     return dt.toISOString().slice(0,10);
@@ -169,6 +149,41 @@ input, select {
     return "green";
   }
   function digits(s) { return String(s||"").replace(/\D/g,""); }
+  
+  function parseDate(val) {
+    if (!val) return "";
+    val = String(val).trim();
+    if (val.indexOf('/') >= 0) {
+      var parts = val.split('/');
+      if (parts.length === 3) {
+        var d = parts[0].padStart(2, '0');
+        var m = parts[1].padStart(2, '0');
+        var y = parts[2];
+        if (y.length === 2) y = "20" + y;
+        return y + "-" + m + "-" + d;
+      }
+    }
+    if (!isNaN(val) && Number(val) > 30000) {
+      var utc_days = Math.floor(Number(val) - 25569);
+      var utc_value = utc_days * 86400;
+      var date_info = new Date(utc_value * 1000);
+      return date_info.toISOString().slice(0, 10);
+    }
+    return val;
+  }
+
+  function parseImei(val) {
+    if (!val) return "";
+    var s = String(val).trim();
+    if (s.indexOf('E') >= 0 || s.indexOf('e') >= 0) {
+      var num = Number(s);
+      if (!isNaN(num)) {
+        return Math.round(num).toString();
+      }
+    }
+    return digits(s);
+  }
+
   function phone10(s) {
     var d = digits(s);
     if (d.length === 12 && d.indexOf("91") === 0) return d.slice(2);
@@ -192,11 +207,10 @@ input, select {
     return out;
   }
   function snaps(v) {
-    var L = T();
     var list = [
-      { key:"gps", date:v.gpsExpiryDate, label:L.gps },
-      { key:"odisha", date:v.odishaExpiryDate, label:L.odisha },
-      { key:"chhattisgarh", date:v.cgExpiryDate, label:L.cg }
+      { key:"gps", date:v.gpsExpiryDate, label:"GPS Expiry" },
+      { key:"odisha", date:v.odishaExpiryDate, label:"OD Mining Expiry" },
+      { key:"chhattisgarh", date:v.cgExpiryDate, label:"CG Mining Expiry" }
     ];
     for (var i=0;i<list.length;i++) {
       list[i].days = daysUntil(list[i].date);
@@ -211,26 +225,21 @@ input, select {
     return w;
   }
   function badge(lv, days, name) {
-    var L = T();
-    var txt = L.none;
-    if (days === 0) txt = L.today;
-    else if (days !== null && days < 0) txt = Math.abs(days) + (DB.lang==="hi"?" दिन हो चुके":" days overdue");
-    else if (days !== null) txt = days + (DB.lang==="hi"?" दिन शेष":" days left");
+    var txt = "Not set";
+    if (days === 0) txt = "Expires today";
+    else if (days !== null && days < 0) txt = Math.abs(days) + " days overdue";
+    else if (days !== null) txt = days + " days left";
     return '<span class="badge b-'+lv+'">'+name+' · '+txt+'</span>';
   }
   function waMsg(v, s) {
     var d = s.days, name = v.customerName || "";
-    if (DB.lang === "hi") {
-      var when = d < 0 ? (Math.abs(d)+" दिन पहले समाप्त हो चुकी है") : (d===0 ? "आज समाप्त हो रही है" : (d+" दिन में समाप्त हो रही है ("+s.date+")"));
-      return "नमस्ते "+name+" जी,\nआपकी गाड़ी "+v.vehicleNumber+" की "+s.label+" वैधता "+when+"।\nकृपया समय रहते रिन्यू करवा लें।\n— VaahanDesk";
-    }
-    var when2 = d < 0 ? ("expired "+Math.abs(d)+" days ago") : (d===0 ? "expires today" : ("expires in "+d+" days ("+s.date+")"));
-    return "Hello "+name+",\nVehicle "+v.vehicleNumber+" "+s.label+" "+when2+".\nPlease renew on time.\n— VaahanDesk";
+    var when = d < 0 ? ("expired " + Math.abs(d) + " days ago") : (d === 0 ? "expires today" : ("expires in " + d + " days (" + s.date + ")"));
+    return "Hello " + name + ",\nVehicle " + v.vehicleNumber + " " + s.label + " " + when + ".\nPlease renew on time.\n— VaahanDesk";
   }
   function waHref(phone, text) {
     var p = phone10(phone);
     if (!p) return "";
-    return "https://wa.me/91"+p+"?text="+encodeURIComponent(text);
+    return "https://wa.me/91" + p + "?text=" + encodeURIComponent(text);
   }
   function shift(days) {
     var p = todayIso().split("-").map(Number);
@@ -240,12 +249,12 @@ input, select {
   }
   function samples() {
     return [
-      {customerName:"राम ट्रांसपोर्ट",vehicleNumber:"OD05AB4521",gpsImei:"869451032211547",gpsInstallDate:shift(-340),gpsValidityYears:1,odishaPermitNo:"OD-MP-8821",odishaExpiryDate:shift(5),cgPermitNo:"CG-TR-4410",cgExpiryDate:shift(48),customerPhone:"9876500101"},
-      {customerName:"शुभम माइनिंग",vehicleNumber:"CG04CD8890",gpsImei:"869451032211548",gpsInstallDate:shift(-700),gpsValidityYears:2,odishaPermitNo:"",odishaExpiryDate:"",cgPermitNo:"CG-MN-2291",cgExpiryDate:shift(-3),customerPhone:"9876500102"},
-      {customerName:"जय जगन्नाथ ट्रांसपोर्ट",vehicleNumber:"OD09EF2211",gpsImei:"869451032211549",gpsInstallDate:shift(-20),gpsValidityYears:1,odishaPermitNo:"OD-KS-1102",odishaExpiryDate:shift(14),cgPermitNo:"CG-JS-8802",cgExpiryDate:shift(21),customerPhone:"9876500103"},
-      {customerName:"बस्तर लॉजिस्टिक्स",vehicleNumber:"CG07GH3344",gpsImei:"869451032211550",gpsInstallDate:shift(-80),gpsValidityYears:1,odishaPermitNo:"OD-BP-6711",odishaExpiryDate:shift(62),cgPermitNo:"CG-BS-0199",cgExpiryDate:shift(0),customerPhone:"9876500104"},
-      {customerName:"महालक्ष्मी डम्पर",vehicleNumber:"OD11JK7788",gpsImei:"869451032211551",gpsInstallDate:shift(-400),gpsValidityYears:2,odishaPermitNo:"OD-SB-4408",odishaExpiryDate:shift(-12),cgPermitNo:"",cgExpiryDate:"",customerPhone:"9876500105"},
-      {customerName:"साई माइनिंग",vehicleNumber:"CG10LM9901",gpsImei:"869451032211552",gpsInstallDate:shift(-10),gpsValidityYears:1,odishaPermitNo:"OD-AN-9088",odishaExpiryDate:shift(90),cgPermitNo:"CG-RG-3301",cgExpiryDate:shift(11),customerPhone:"9876500106"}
+      {customerName:"Ram Transport",vehicleNumber:"OD05AB4521",gpsImei:"869451032211547",gpsInstallDate:shift(-340),gpsValidityYears:1,odishaExpiryDate:shift(5),cgExpiryDate:shift(48),customerPhone:"9876500101"},
+      {customerName:"Shubham Mining",vehicleNumber:"CG04CD8890",gpsImei:"869451032211548",gpsInstallDate:shift(-700),gpsValidityYears:2,odishaExpiryDate:"",cgExpiryDate:shift(-3),customerPhone:"9876500102"},
+      {customerName:"Jai Jagannath Transport",vehicleNumber:"OD09EF2211",gpsImei:"869451032211549",gpsInstallDate:shift(-20),gpsValidityYears:1,odishaExpiryDate:shift(14),cgExpiryDate:shift(21),customerPhone:"9876500103"},
+      {customerName:"Bastar Logistics",vehicleNumber:"CG07GH3344",gpsImei:"869451032211550",gpsInstallDate:shift(-80),gpsValidityYears:1,odishaExpiryDate:shift(62),cgExpiryDate:shift(0),customerPhone:"9876500104"},
+      {customerName:"Mahalaxmi Dumper",vehicleNumber:"OD11JK7788",gpsImei:"869451032211551",gpsInstallDate:shift(-400),gpsValidityYears:2,odishaExpiryDate:shift(-12),cgExpiryDate:"",customerPhone:"9876500105"},
+      {customerName:"Sai Mining",vehicleNumber:"CG10LM9901",gpsImei:"869451032211552",gpsInstallDate:shift(-10),gpsValidityYears:1,odishaExpiryDate:shift(90),cgExpiryDate:shift(11),customerPhone:"9876500106"}
     ];
   }
   function esc(s) {
@@ -264,13 +273,28 @@ input, select {
     var vehicleNumber = String(raw.vehicleNumber||"").trim().toUpperCase().replace(/\s+/g,"");
     var customerName = String(raw.customerName||"").trim();
     if (!vehicleNumber || !customerName) throw new Error(L.required);
-    var imei = digits(raw.gpsImei);
-    if (imei && imei.length !== 15) throw new Error(L.badImei);
+    
+    var imei = parseImei(raw.gpsImei);
+    if (imei && imei.length !== 15) {
+      if (imei.length < 15) imei = imei.padEnd(15, '0');
+      else if (imei.length > 15) imei = imei.slice(0, 15);
+    }
+
     var phone = String(raw.customerPhone||"").trim() ? phone10(raw.customerPhone) : "";
-    if (String(raw.customerPhone||"").trim() && !phone) throw new Error(L.badPhone);
-    var years = Number(raw.gpsValidityYears)||0;
-    var install = String(raw.gpsInstallDate||"").trim();
-    var gpsExpiry = install && years ? addYears(install, years) : "";
+    var years = Number(raw.gpsValidityYears)||1;
+    var install = parseDate(raw.gpsInstallDate);
+    var gpsExpiry = parseDate(raw.gpsExpiryDate);
+    if (!gpsExpiry && install && years) {
+      gpsExpiry = addYears(install, years);
+    } else if (!install && gpsExpiry && years) {
+      var p = gpsExpiry.split("-").map(Number);
+      if (p.length === 3) {
+        var dt = new Date(Date.UTC(p[0], p[1]-1, p[2]));
+        dt.setUTCFullYear(dt.getUTCFullYear() - years);
+        install = dt.toISOString().slice(0,10);
+      }
+    }
+
     var cust = null;
     for (var i=0;i<DB.users.length;i++) {
       var x = DB.users[i];
@@ -284,16 +308,85 @@ input, select {
       id: id || uid(), ownerId: ownerId, customerUserId: cust ? cust.id : null,
       customerName: customerName, vehicleNumber: vehicleNumber, gpsImei: imei,
       gpsInstallDate: install, gpsValidityYears: years||null, gpsExpiryDate: gpsExpiry,
-      odishaPermitNo: String(raw.odishaPermitNo||"").trim(),
-      odishaExpiryDate: String(raw.odishaExpiryDate||"").trim(),
-      cgPermitNo: String(raw.cgPermitNo||"").trim(),
-      cgExpiryDate: String(raw.cgExpiryDate||"").trim(),
+      odishaExpiryDate: parseDate(raw.odishaExpiryDate),
+      cgExpiryDate: parseDate(raw.cgExpiryDate),
       customerPhone: phone
     };
     var found = -1;
     for (var k=0;k<DB.vehicles.length;k++) if (DB.vehicles[k].id===rec.id) found = k;
     if (found>=0) DB.vehicles[found] = rec; else DB.vehicles.push(rec);
     persist();
+  }
+
+  function exportToExcel() {
+    var list = myVehicles();
+    if (!list || list.length === 0) {
+      flash("No vehicle data available to export!");
+      render();
+      return;
+    }
+    var exportData = list.map(function(v) {
+      return {
+        "CUSTOMER NAME": v.customerName || "",
+        "MOBILE NUMBER": v.customerPhone || "",
+        "VEHICLE NUMBER": v.vehicleNumber || "",
+        "GPS IMEI": v.gpsImei || "",
+        "GPS INSTALLATION DATE": v.gpsInstallDate || "",
+        "GPS EXPIRY DATE": v.gpsExpiryDate || "",
+        "OD MINING EXPIRY DATE": v.odishaExpiryDate || "",
+        "CG MINING EXPIRY DATE": v.cgExpiryDate || ""
+      };
+    });
+    var worksheet = XLSX.utils.json_to_sheet(exportData);
+    var workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Vehicles");
+    XLSX.writeFile(workbook, "VaahanDesk_Vehicles.xlsx");
+  }
+
+  function importFromExcel(e) {
+    var file = e.target.files[0];
+    if (!file) return;
+    
+    flash("⏳ Importing vehicles, please wait...", "ok");
+    render();
+
+    var reader = new FileReader();
+    reader.onload = function(evt) {
+      try {
+        var data = new Uint8Array(evt.target.result);
+        var workbook = XLSX.read(data, {type: 'array'});
+        var firstSheetName = workbook.SheetNames[0];
+        var worksheet = workbook.Sheets[firstSheetName];
+        var json = XLSX.utils.sheet_to_json(worksheet, {raw: false});
+        var admin = me();
+        if (!admin || admin.role !== "admin") return;
+        var count = 0;
+        for (var i = 0; i < json.length; i++) {
+          var row = json[i];
+          var raw = {
+            customerName: row["CUSTOMER NAME"] || row["customerName"] || row["ग्राहक का नाम"] || "",
+            customerPhone: row["MOBILE NUMBER"] || row["customerPhone"] || row["मोबाइल नंबर"] || "",
+            vehicleNumber: row["VEHICLE NUMBER"] || row["vehicleNumber"] || row["गाड़ी नंबर"] || "",
+            gpsImei: row["GPS IMEI"] || row["gpsImei"] || "",
+            gpsInstallDate: row["GPS INSTALLATION DATE"] || row["gpsInstallDate"] || row["GPS इंस्टॉल तिथि"] || "",
+            gpsValidityYears: row["GPS Validity (Years)"] || row["gpsValidityYears"] || row["GPS वैधता (वर्ष)"] || 1,
+            gpsExpiryDate: row["GPS EXPIRY DATE"] || row["gpsExpiryDate"] || "",
+            odishaExpiryDate: row["OD MINING EXPIRY DATE"] || row["odishaExpiryDate"] || row["ओडिशा समाप्ति तिथि"] || "",
+            cgExpiryDate: row["CG MINING EXPIRY DATE"] || row["cgExpiryDate"] || row["छत्तीसगढ़ समाप्ति तिथि"] || ""
+          };
+          try {
+            upsert(admin.id, raw);
+            count++;
+          } catch(err) {}
+        }
+        flash("✅ " + count + " vehicles imported successfully!", "ok");
+        render();
+      } catch (err) {
+        flash("❌ Error reading Excel file! Please check headers.");
+        render();
+      }
+    };
+    reader.readAsArrayBuffer(file);
   }
 
   function openDemo() {
@@ -313,37 +406,33 @@ input, select {
     DB.session = admin.id;
     persist();
     page = "dash";
-    flash("डेमो खुल गया · लॉगिन: demo@vaahandesk.local / demo123", "ok");
+    flash("Demo loaded successfully · Login: demo@vaahandesk.local / demo123", "ok");
     render();
   }
 
   function loginView() {
     var L = T();
-    var shopOn = loginTab !== "cust";
     return '<div style="max-width:440px;margin:32px auto">'+
       '<h1 style="font-size:42px;margin:0">'+L.app+'</h1>'+
       '<p class="muted">'+L.tag+'</p>'+banner()+
       '<button type="button" class="btn btn-p" data-act="demo" style="margin:12px 0">'+L.demo+'</button>'+
-      '<p class="muted">दुकान के लिए ऊपर डेमो, या नीचे ईमेल+पासवर्ड। ग्राहक के लिए दायाँ टैब — मोबाइल नंबर।</p>'+
       '<div class="row" style="margin:12px 0">'+
-        '<button type="button" class="chip '+(shopOn?"on":"")+'" data-act="tab-shop" id="tabShop">'+L.shop+'</button>'+
-        '<button type="button" class="chip '+(shopOn?"":"on")+'" data-act="tab-cust" id="tabCust">'+L.customer+'</button>'+
+        '<button type="button" class="chip on" data-act="tab-shop" id="tabShop">'+L.shop+'</button>'+
+        '<button type="button" class="chip" data-act="tab-cust" id="tabCust">'+L.customer+'</button>'+
       '</div>'+
-      (shopOn
-        ? ('<div id="shopForm" class="card grid">'+
+      '<div id="shopForm" class="card grid">'+
         '<div><label>'+L.shopName+'</label><input id="shopName" value="MBEL GPS" /></div>'+
         '<div><label>'+L.email+'</label><input id="shopEmail" value="shop@mbelgps.com" /></div>'+
         '<div><label>'+L.password+'</label><input id="shopPass" type="password" value="123456" /></div>'+
         '<button type="button" class="btn btn-p" data-act="shop-login">'+L.signIn+'</button>'+
         '<button type="button" class="btn btn-s" data-act="shop-create">'+L.createShop+'</button>'+
-      '</div>')
-        : ('<div id="custForm" class="card grid">'+
+      '</div>'+
+      '<div id="custForm" class="card grid hide">'+
         '<p class="muted">'+L.customerHint+'</p>'+
         '<div><label>'+L.phone+'</label><input id="custPhone" inputmode="numeric" placeholder="9876543210" /></div>'+
         '<div><label>'+L.password+'</label><input id="custPass" type="password" /></div>'+
         '<button type="button" class="btn btn-p" data-act="cust-login">'+L.signIn+'</button>'+
-      '</div>'))+
-      '</div>';
+      '</div></div>';
   }
 
   function dashView(u) {
@@ -402,14 +491,20 @@ input, select {
       if (filters.status==="red") { var w=worst(v); if (w!=="red"&&w!=="expired") continue; }
       out.push(v);
     }
+    
     var html = banner()+'<div class="row" style="justify-content:space-between"><h1 style="margin:0">'+L.vehicles+'</h1>'+
-      (u.role==="admin"?'<button type="button" class="btn btn-p" data-act="addv" style="width:auto">'+L.add+'</button>':'')+'</div>'+
+      (u.role==="admin" ? '<div class="row" style="gap:6px">' +
+        '<button type="button" class="btn btn-s" data-act="addv" style="width:auto">'+L.add+'</button>' +
+        '<button type="button" class="btn btn-s" data-act="export-excel" style="width:auto">📥 '+L.exportExcel+'</button>' +
+        '<label class="btn btn-p" style="width:auto; cursor:pointer; margin:0; display:inline-flex; align-items:center;">📤 '+L.importExcel+'<input type="file" id="excelFileIn" accept=".xlsx, .xls, .csv" style="display:none" /></label>' +
+        '</div>' : '') + '</div>'+
       '<div class="grid g2" style="margin:12px 0">'+
         '<input id="qV" placeholder="'+L.searchV+'" value="'+esc(filters.q)+'" />'+
         '<input id="qC" placeholder="'+L.searchC+'" value="'+esc(filters.cq)+'" /></div>'+
       '<div class="row">'+
         chip("svc","all",L.all)+chip("svc","gps",L.gps)+chip("svc","odisha",L.odisha)+chip("svc","chhattisgarh",L.cg)+
         '<button type="button" class="chip '+(filters.status==="red"?"on":"")+'" data-act="st-red">'+L.redOnly+'</button></div><div style="margin-top:12px">';
+    
     if (!out.length) html += '<p class="muted">'+L.vehicles+': 0</p>';
     for (i=0;i<out.length;i++) {
       var vv = out[i], bd="";
@@ -431,7 +526,7 @@ input, select {
   }
   function formHtml(v) {
     var L = T();
-    var x = v || { customerName:"", vehicleNumber:"", gpsImei:"", gpsInstallDate:"", gpsValidityYears:1, odishaPermitNo:"", odishaExpiryDate:"", cgPermitNo:"", cgExpiryDate:"", customerPhone:"" };
+    var x = v || { customerName:"", vehicleNumber:"", gpsImei:"", gpsInstallDate:"", gpsValidityYears:1, odishaExpiryDate:"", cgExpiryDate:"", customerPhone:"" };
     var exp = addYears(x.gpsInstallDate, Number(x.gpsValidityYears)||0);
     var yrs = [1,2,3,5], opts="";
     for (var i=0;i<yrs.length;i++) opts += '<option value="'+yrs[i]+'" '+(Number(x.gpsValidityYears)===yrs[i]?"selected":"")+'>'+yrs[i]+'</option>';
@@ -443,9 +538,7 @@ input, select {
       '<div><label>'+L.install+'</label><input id="fInst" type="date" value="'+(x.gpsInstallDate||"")+'" /></div>'+
       '<div><label>'+L.validity+'</label><select id="fYears">'+opts+'</select></div>'+
       '<div><label>'+L.gpsExp+'</label><input id="fGpsExp" value="'+exp+'" disabled /></div><div></div>'+
-      '<div><label>'+L.odPermit+'</label><input id="fOdNo" value="'+esc(x.odishaPermitNo)+'" /></div>'+
       '<div><label>'+L.odExp+'</label><input id="fOdExp" type="date" value="'+(x.odishaExpiryDate||"")+'" /></div>'+
-      '<div><label>'+L.cgPermit+'</label><input id="fCgNo" value="'+esc(x.cgPermitNo)+'" /></div>'+
       '<div><label>'+L.cgExp+'</label><input id="fCgExp" type="date" value="'+(x.cgExpiryDate||"")+'" /></div>'+
       '</div><div class="btn-row" style="margin-top:12px">'+
       '<button type="button" class="btn btn-p" data-act="savev">'+L.save+'</button>'+
@@ -458,6 +551,7 @@ input, select {
       '<div><label>'+L.phone+'</label><input id="cPhone" inputmode="numeric" /></div>'+
       '<div><label>'+L.password+'</label><input id="cPass" /></div></div>'+
       '<button type="button" class="btn btn-p" data-act="make-cust">'+L.createLogin+'</button></div>';
+    
     for (var i=0;i<DB.users.length;i++) {
       var c = DB.users[i];
       if (c.role!=="customer" || c.ownerId!==u.id) continue;
@@ -466,10 +560,22 @@ input, select {
         var v=DB.vehicles[j];
         if (v.ownerId===u.id && (v.customerUserId===c.id || v.customerPhone===c.phone)) n++;
       }
-      var text = DB.lang==="hi" ? ("आपका VaahanDesk लॉगिन:\nमोबाइल: "+c.phone+"\nपासवर्ड दुकान वाले से लें।") : ("VaahanDesk login\nMobile: "+c.phone);
+      var text = "VaahanDesk login details:\nMobile: " + c.phone + "\nPassword: " + c.password;
       var href = waHref(c.phone, text);
-      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · '+n+' '+L.vehicles+
-        '<div class="btn-row" style="margin-top:8px">'+(href?'<a class="btn btn-wa" href="'+href+'">'+L.share+'</a>':'')+
+      
+      html += '<div class="card" style="margin-bottom:8px"><b>'+esc(c.name)+'</b> · '+c.phone+' · Pass: <b>'+esc(c.password)+'</b> · '+n+' '+L.vehicles;
+      
+      if (resettingCustId === c.id) {
+        html += '<div class="grid" style="margin-top:10px; background:var(--soft); padding:10px; border-radius:8px;">'+
+          '<div><label>New Password</label><input id="newCustPass" value="" placeholder="Enter new password" /></div>'+
+          '<div class="btn-row" style="margin-top:6px">'+
+          '<button type="button" class="btn btn-p" data-act="save-pass" data-id="'+c.id+'">'+L.updatePass+'</button>'+
+          '<button type="button" class="btn btn-s" data-act="cancel-pass">'+L.cancel+'</button></div></div>';
+      }
+
+      html += '<div class="btn-row" style="margin-top:8px">'+
+        (href?'<a class="btn btn-wa" href="'+href+'">'+L.share+'</a>':'')+
+        '<button type="button" class="btn btn-s" data-act="prompt-reset" data-id="'+c.id+'" style="width:auto">🔑 '+L.resetPass+'</button>'+
         '<button type="button" class="btn btn-d" data-act="delc" data-id="'+c.id+'">'+L.del+'</button></div></div>';
     }
     return html;
@@ -478,12 +584,9 @@ input, select {
     var L = T(), days=[30,15,7,3,1,0], chips="";
     for (var i=0;i<days.length;i++) {
       var on = (DB.alertDays||[]).indexOf(days[i])>=0 ? "on":"";
-      chips += '<button type="button" class="chip '+on+'" data-act="day" data-id="'+days[i]+'">'+(days[i]===0?L.today:days[i])+'</button>';
+      chips += '<button type="button" class="chip '+on+'" data-act="day" data-id="'+days[i]+'">'+(days[i]===0?"Today":days[i]+" Days")+'</button>';
     }
     return banner()+'<h1>'+L.settings+'</h1><p class="muted">'+(u.role==="admin"?L.shopRole:L.custRole)+' · '+esc(u.name||u.email||u.phone||"")+'</p>'+
-      '<div class="card" style="margin-top:12px"><h2 style="margin-top:0">'+L.lang+'</h2><div class="row">'+
-      '<button type="button" class="chip '+(DB.lang==="hi"?"on":"")+'" data-act="lang-hi">हिन्दी</button>'+
-      '<button type="button" class="chip '+(DB.lang==="en"?"on":"")+'" data-act="lang-en">English</button></div></div>'+
       (u.role==="admin"?'<div class="card" style="margin-top:12px"><h2 style="margin-top:0">'+L.alert+'</h2><div class="row">'+chips+'</div></div>':'')+
       '<p style="margin-top:16px"><button type="button" class="btn btn-s" data-act="out">'+L.out+'</button></p>';
   }
@@ -504,6 +607,10 @@ input, select {
       var ed = document.getElementById("editor");
       if (ed) ed.innerHTML = formHtml(editing.id ? editing : null);
     }
+    var fileInput = document.getElementById("excelFileIn");
+    if (fileInput) {
+      fileInput.onchange = importFromExcel;
+    }
   }
 
   function findUser(pred) {
@@ -515,35 +622,50 @@ input, select {
     var L = T();
     msg = "";
     if (act==="demo") return openDemo();
-    if (act==="tab-shop") { loginTab = "shop"; msg=""; return render(); }
-    if (act==="tab-cust") { loginTab = "cust"; msg=""; return render(); }
+    if (act==="export-excel") return exportToExcel();
+    if (act==="tab-shop") {
+      document.getElementById("shopForm").classList.remove("hide");
+      document.getElementById("custForm").classList.add("hide");
+      document.getElementById("tabShop").classList.add("on");
+      document.getElementById("tabCust").classList.remove("on");
+      return;
+    }
+    if (act==="tab-cust") {
+      document.getElementById("custForm").classList.remove("hide");
+      document.getElementById("shopForm").classList.add("hide");
+      document.getElementById("tabCust").classList.add("on");
+      document.getElementById("tabShop").classList.remove("on");
+      return;
+    }
     if (act==="shop-create" || act==="shop-login") {
-      loginTab = "shop";
       var name = (val("shopName")||"").trim() || "MBEL GPS";
       var email = (val("shopEmail")||"").trim().toLowerCase();
       var pass = val("shopPass");
       if (!email) { flash(L.required); return render(); }
       if (!pass || pass.length<6) { flash(L.pwMin); return render(); }
       var u = findUser(function(x){ return x.role==="admin" && x.email===email; });
-      if (!u) {
+      if (act==="shop-create") {
+        if (u) { flash(L.dupP); return render(); }
         u = { id:uid(), role:"admin", name:name, email:email, password:pass, phone:null, ownerId:null };
         u.ownerId = u.id;
         DB.users.push(u);
       } else {
-        u.name = name;
-        u.password = pass;
+        if (!u) {
+          u = { id:uid(), role:"admin", name:name, email:email, password:pass, phone:null, ownerId:null };
+          u.ownerId = u.id;
+          DB.users.push(u);
+        } else if (u.password !== pass) { flash(L.badLogin); return render(); }
       }
       DB.session = u.id; persist(); page="dash"; flash(L.created,"ok"); return render();
     }
     if (act==="cust-login") {
-      loginTab = "cust";
       var phone = phone10(val("custPhone"));
       var p2 = val("custPass");
       var c = findUser(function(x){ return x.role==="customer" && x.phone===phone && x.password===p2; });
       if (!c) { flash(L.badCust); return render(); }
       DB.session=c.id; persist(); page="dash"; return render();
     }
-    if (act==="go") { page = el.getAttribute("data-id"); editing=null; return render(); }
+    if (act==="go") { page = el.getAttribute("data-id"); editing=null; resettingCustId=null; return render(); }
     if (act==="sample") {
       var admin = me(); var s=samples();
       for (var i=0;i<s.length;i++) { try { upsert(admin.id, s[i]); } catch(e) {} }
@@ -553,87 +675,120 @@ input, select {
     if (act==="svc") { filters.svc = el.getAttribute("data-id"); return render(); }
     if (act==="st-red") { filters.status = filters.status==="red"?"all":"red"; return render(); }
     if (act==="edit") {
-      editing = null;
-      for (var e=0;e<DB.vehicles.length;e++) if (DB.vehicles[e].id===el.getAttribute("data-id")) editing = DB.vehicles[e];
-      render();
-      var box = document.getElementById("editor");
-      if (box) box.innerHTML = formHtml(editing);
-      return;
+      var id = el.getAttribute("data-id");
+      var vs = myVehicles();
+      for (var i=0;i<vs.length;i++) if (vs[i].id===id) editing = vs[i];
+      render(); return;
     }
     if (act==="delv") {
-      if (!confirm(L.del+"?")) return;
       var id = el.getAttribute("data-id");
-      var keep=[];
-      for (var d=0;d<DB.vehicles.length;d++) if (DB.vehicles[d].id!==id) keep.push(DB.vehicles[d]);
-      DB.vehicles=keep; persist(); flash(L.deleted,"ok"); return render();
+      DB.vehicles = DB.vehicles.filter(function(x){ return x.id!==id; });
+      persist(); flash(L.deleted,"ok"); return render();
     }
     if (act==="savev") {
+      var admin = me();
+      var raw = {
+        customerName: val("fName"),
+        vehicleNumber: val("fVeh"),
+        gpsImei: val("fImei"),
+        customerPhone: val("fPhone"),
+        gpsInstallDate: val("fInst"),
+        gpsValidityYears: val("fYears"),
+        odishaExpiryDate: val("fOdExp"),
+        cgExpiryDate: val("fCgExp")
+      };
       try {
-        upsert(me().id, {
-          customerName:val("fName"), vehicleNumber:val("fVeh"), gpsImei:val("fImei"),
-          gpsInstallDate:val("fInst"), gpsValidityYears:Number(val("fYears")),
-          odishaPermitNo:val("fOdNo"), odishaExpiryDate:val("fOdExp"),
-          cgPermitNo:val("fCgNo"), cgExpiryDate:val("fCgExp"), customerPhone:val("fPhone")
-        }, editing && editing.id);
-        editing=null; flash(L.saved,"ok"); return render();
-      } catch (err) { flash(err.message); return render(); }
+        upsert(admin.id, raw, editing && editing.id ? editing.id : null);
+        editing = null; flash(L.saved, "ok"); render();
+      } catch (err) {
+        flash(err.message); render();
+      }
+      return;
     }
-    if (act==="cancelv") { editing=null; return render(); }
+    if (act==="cancelv") { editing = null; render(); return; }
     if (act==="make-cust") {
-      var cn=(val("cName")||"").trim(), cp=phone10(val("cPhone")), pw=val("cPass"), a=me();
-      if (!cn) { flash(L.required); return render(); }
-      if (!cp) { flash(L.badPhone); return render(); }
-      if (!pw || pw.length<6) { flash(L.pwMin); return render(); }
-      if (findUser(function(x){ return x.ownerId===a.id && x.phone===cp; })) { flash(L.dupP); return render(); }
-      var nu = { id:uid(), role:"customer", name:cn, email:cp+"@customer.local", password:pw, phone:cp, ownerId:a.id };
-      DB.users.push(nu);
-      for (var t=0;t<DB.vehicles.length;t++) if (DB.vehicles[t].ownerId===a.id && DB.vehicles[t].customerPhone===cp) DB.vehicles[t].customerUserId=nu.id;
-      persist(); flash(L.created,"ok"); return render();
+      var admin = me();
+      var cname = (val("cName")||"").trim();
+      var cphone = phone10(val("cPhone"));
+      var cpass = (val("cPass")||"").trim();
+      if (!cname || !cphone || !cpass) { flash(L.required); return render(); }
+      var exist = findUser(function(x){ return x.role==="customer" && x.ownerId===admin.id && x.phone===cphone; });
+      if (exist) { flash(L.dupP); return render(); }
+      var cu = { id:uid(), role:"customer", name:cname, email:null, password:cpass, phone:cphone, ownerId:admin.id };
+      DB.users.push(cu);
+      persist(); flash(L.created, "ok"); render();
+      return;
+    }
+    if (act==="prompt-reset") {
+      resettingCustId = el.getAttribute("data-id");
+      render();
+      return;
+    }
+    if (act==="cancel-pass") {
+      resettingCustId = null;
+      render();
+      return;
+    }
+    if (act==="save-pass") {
+      var cid = el.getAttribute("data-id");
+      var newPass = (val("newCustPass")||"").trim();
+      if (!newPass) { flash("Please enter new password"); return render(); }
+      for (var i=0; i<DB.users.length; i++) {
+        if (DB.users[i].id === cid) {
+          DB.users[i].password = newPass;
+        }
+      }
+      persist();
+      resettingCustId = null;
+      flash("Password updated successfully!", "ok");
+      render();
+      return;
     }
     if (act==="delc") {
-      var cid=el.getAttribute("data-id"), uu=[];
-      for (var z=0;z<DB.users.length;z++) if (DB.users[z].id!==cid) uu.push(DB.users[z]);
-      DB.users=uu; persist(); flash(L.deleted,"ok"); return render();
+      var cid = el.getAttribute("data-id");
+      DB.users = DB.users.filter(function(x){ return x.id!==cid; });
+      persist(); flash(L.deleted, "ok"); render();
+      return;
     }
-    if (act==="lang-hi") { DB.lang="hi"; persist(); return render(); }
-    if (act==="lang-en") { DB.lang="en"; persist(); return render(); }
     if (act==="day") {
-      var n=Number(el.getAttribute("data-id")), arr=DB.alertDays||[], nxt=[], seen=false;
-      for (var y=0;y<arr.length;y++) { if (arr[y]===n) { seen=true; } else nxt.push(arr[y]); }
-      if (!seen) nxt.push(n);
-      nxt.sort(function(a,b){ return b-a; });
-      DB.alertDays=nxt; persist(); flash(L.saved,"ok"); return render();
+      var d = Number(el.getAttribute("data-id"));
+      var idx = (DB.alertDays||[]).indexOf(d);
+      if (idx>=0) DB.alertDays.splice(idx,1); else DB.alertDays.push(d);
+      persist(); render(); return;
     }
-    if (act==="out") { DB.session=null; persist(); page="dash"; editing=null; return render(); }
+    if (act==="out") { DB.session=null; persist(); page="dash"; editing=null; resettingCustId=null; render(); return; }
   }
 
-  document.addEventListener("click", function (e) {
+  document.addEventListener("click", function(e) {
     var t = e.target;
-    if (!t || !t.closest) return;
-    if (t.id==="qV" || t.id==="qC") return;
-    var el = t.closest("[data-act]");
-    if (!el) return;
-    e.preventDefault();
-    try { onAct(el.getAttribute("data-act"), el); }
-    catch (err) { flash(String(err.message||err)); render(); }
-  }, true);
-
-  document.addEventListener("input", function (e) {
-    if (e.target && e.target.id==="qV") filters.q = e.target.value;
-    if (e.target && e.target.id==="qC") filters.cq = e.target.value;
-    if (e.target && (e.target.id==="fInst" || e.target.id==="fYears")) {
-      var g = document.getElementById("fGpsExp");
-      if (g) g.value = addYears(val("fInst"), Number(val("fYears"))||0);
+    while (t && t !== document) {
+      var act = t.getAttribute("data-act");
+      if (act) {
+        onAct(act, t);
+        break;
+      }
+      t = t.parentNode;
     }
   });
-  document.addEventListener("change", function (e) {
-    if (e.target && (e.target.id==="qV" || e.target.id==="qC")) render();
-  });
 
-  window.onerror = function (m) {
-    var r = document.getElementById("app");
-    if (r) r.innerHTML = '<div class="err">Error: '+esc(m)+'</div>' + (r.innerHTML||"");
-  };
+  document.addEventListener("input", function(e) {
+    if (e.target.id === "qV") {
+      filters.q = e.target.value;
+      render();
+    }
+    if (e.target.id === "qC") {
+      filters.cq = e.target.value;
+      render();
+    }
+    if (e.target.id === "fInst" || e.target.id === "fYears") {
+      var inst = val("fInst");
+      var yrs = Number(val("fYears")) || 1;
+      var expEl = document.getElementById("fGpsExp");
+      if (expEl && inst) {
+        expEl.value = addYears(inst, yrs);
+      }
+    }
+  });
 
   render();
 })();
